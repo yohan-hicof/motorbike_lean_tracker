@@ -6,6 +6,8 @@ It uses a M5Stack core2 with the intgrated IMU (but would work with previous ver
 When started it display the current speed, direction, lean angle and a short historic of the last 60 seconds.
 It regularly saves on the SD card the data recorded.
 
+The computation of the lean angle is based on the accelerometer and the gyroscope. This allows to have a measure that should be independant from acceleration and only measure the lean angle. The method is based on the exelent series of videos from Paul McWhorter: https://toptechboy.com/arduino-based-9-axis-inertial-measurement-unit-imu-based-on-bno055-sensor/ and modified to fit my need and work with the IMU of the stack.
+
 #TODO
 
 -Improve the description and add images.
