@@ -23,3 +23,5 @@ The computation of the lean angle is based on the accelerometer and the gyroscop
 -Create a python script to allow data visualisation from the saved file.
 
 -Find a way to estimate the laptime based on gps data.
+
+-Add the state of the battery during tracking and visualization.
