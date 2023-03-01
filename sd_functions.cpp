@@ -193,13 +193,21 @@ char** list_dir_root(fs::FS &fs, char** list_files, int* nb_files){
   return list_files;
 }
 
-
 bool select_file(fs::FS &fs, char* selected_path){
   //Function to select a file from the root dir
-  M5.Lcd.setTextSize(1);
   char **list_files;
-  int nb_files, current_selection = 0;
-  M5.Lcd.setCursor(0, 10);  
+  int nb_files, current_selection = 0, start_index, stop_index;
+
+  M5.Lcd.setTextSize(1);
+  M5.Lcd.fillScreen(BLACK);
+  draw_selection_arrows(); 
+  M5.Lcd.setCursor(0, 10); 
+
+  if (!sd_card_found){
+    M5.Lcd.printf("No SD card detected\n");
+    return false;
+  }   
+   
   list_files = list_dir_root(fs, list_files, &nb_files);  
   //If nothing found, return false, else display the selection.
   if (nb_files == 0){
@@ -209,17 +217,20 @@ bool select_file(fs::FS &fs, char* selected_path){
   while (true){
     M5.Lcd.setCursor(0, 10); 
     M5.Lcd.printf("List_files: \n");    
-    for (int i = 0; i < nb_files; i++){
-      if (i == current_selection){
+    start_index = max(0, min(current_selection-15, nb_files-20));
+    stop_index = min(20, nb_files);
+    for (int i = 0; i < stop_index && i+start_index < nb_files; i++){
+      //display differently the selected file to show it clearly
+      if (i+start_index == current_selection){
         M5.Lcd.setTextColor(TFT_PURPLE, TFT_LIGHTGREY);
-        M5.Lcd.printf("   %s\n", list_files[i]);
+        M5.Lcd.printf("   %-45s\n", list_files[i+start_index]);
         M5.Lcd.setTextColor( GREEN, BLACK);
       }
       else{
-        M5.Lcd.printf("   %s\n", list_files[i]);
+        M5.Lcd.printf("   %-45s\n", list_files[i+start_index]);
       }      
     }
-    draw_selection_arrows();
+    //draw_selection_arrows();
     M5.update();
     if (M5.BtnA.wasPressed()) current_selection = min(nb_files-1, current_selection+1);
     if (M5.BtnB.wasPressed()) {
