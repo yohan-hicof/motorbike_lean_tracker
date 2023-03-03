@@ -12,7 +12,7 @@ The computation of the lean angle is based on the accelerometer and the gyroscop
 
 -Improve the description and add images.
 
--Allow the recorded data to be replayed.
+-Allow the recorded data to be replayed. (in progress)
 
 -Create another interface to see the track according to the gps data.
 
