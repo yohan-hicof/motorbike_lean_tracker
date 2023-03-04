@@ -56,7 +56,7 @@ void main_tracker_loop(){
   head = create_new_data_point();
   //head = create_dummy_data_point(number_of_links++);
   tail = head;    
-  //smartDelay(100);
+  
   delay(100);
   last_save = millis();
   while (true){

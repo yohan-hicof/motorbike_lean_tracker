@@ -26,6 +26,8 @@ The computation of the lean angle is based on the accelerometer and the gyroscop
 
 -Add the state of the battery during tracking and visualization.
 
+- Following this: https://www.youtube.com/watch?v=SUAqVUN9AuQ to use sprite to display the needle and stop the flickering.
+
 #Known bug
 
 There is a bug with reading file with SD card. Some files are not found during listing, but they are found on a PC. When copied, they are then found on the sd card by the M5. Happend only with larger file so far.

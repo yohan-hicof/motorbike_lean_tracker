@@ -73,8 +73,12 @@ void wait_for_gps();
 void main_tracker_loop();
 
 //Displaying the current state
+void format_date_time(uint32_t date, uint32_t time, char* string_time);
+
 void create_tracker_sprite();
 void create_menu_sprite();
+void create_needle_sprite();
+
 void draw_speed_triangle(float speed, int cx, int cy, int r);
 void draw_direction_triangle(float course, int cx, int cy, int r);
 void draw_lean_angle_bar(float lean, int cx, int cy, int w, int h);
@@ -92,3 +96,4 @@ bool select_file(fs::FS &fs, char* selected_path);
 void main_replay();
 void extract_abstract_data(double_chain* head);
 void replay_standard_GUI(double_chain* tail);
+void replay_track_GUI(double_chain* tail);

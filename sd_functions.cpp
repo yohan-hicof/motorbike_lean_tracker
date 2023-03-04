@@ -120,7 +120,7 @@ int compare_files_name(const char *name1, const char *name2){
   
   int i = 0;
   while(name1[i] == name2[i]) {
-    if (name1[i] == '\0' && name1[i] == '\0') return 0;
+    if (name1[i] == '\0' && name2[i] == '\0') return 0;
     i++;
   }
   if (name1[i] < name2[i]) return 1;
@@ -210,9 +210,21 @@ bool select_file(fs::FS &fs, char* selected_path){
   list_files = list_dir_root(fs, list_files, &nb_files);  
   //If nothing found, return false, else display the selection.
   if (nb_files == 0){
-      M5.Lcd.printf("No file found on the SD card\n");      
-      return false;
+    M5.Lcd.printf("No file found on the SD card\n");      
+    return false;
+  }
+  //Sort the files, there are few,, we do a bubble sort.
+  for (int i = 0; i < nb_files; i++){
+    for (int j = i+1; j < nb_files; j++){
+      if (compare_files_name(list_files[i], list_files[j]) == -1){
+        char* temp = list_files[i];
+        list_files[i] = list_files[j];
+        list_files[j] = temp;
+      }
     }
+  }
+
+
   while (true){
     M5.Lcd.setCursor(0, 10); 
     M5.Lcd.printf("List_files: \n");    

@@ -5,6 +5,7 @@ Create a way to replay a saved track.
    Create a function that feed the display slowly by changing the position of the head   
    Display track with colored pixel for speed/lean.
    Replay the normal visualisation.
+   https://www.youtube.com/watch?v=SUAqVUN9AuQ&t=9s For sprite movement, instead of drawing triangles
 Create the sprites from real images.
 Create a menu to configure: Brightness, IMU calib, Set time using GPS 
 */
@@ -107,6 +108,7 @@ void setup() {
   //Create the sprite we might use
   create_tracker_sprite();
   create_menu_sprite();
+  create_needle_sprite();
 
   //Run them on the second core.
   //Start the computation of pitch and roll in the bg.

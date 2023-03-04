@@ -2,10 +2,26 @@
 
 TFT_eSprite tracker_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite menu_sprite = TFT_eSprite(&M5.Lcd);
+TFT_eSprite needle_sprite = TFT_eSprite(&M5.Lcd);
 int course_x = 80, course_y = 65, course_r = 50;
 int counter_x = 235, counter_y = 65, counter_r = 50;
 int x_min = 60, x_max = 300, y_min = 150, y_max = 230;
 
+
+void format_date_time(uint32_t date, uint32_t time, char* string_time){
+  //Convert two int containing date and time into a single char*
+  //We assume the char* has at least 20 char allocated.
+  int year, month, day, hour, minute, second, centi;
+  year = date/10000;
+  month = (date/100)%100;
+  day = date%100;
+  hour = time/1000000;
+  minute = (time/10000)%100;
+  second = (time/100)%100;
+  centi = time%100;
+
+  sprintf(string_time, "%02d-%02d-%02d %02d-%02d-%02d-%02d\0", year, month, day, hour, minute, second, centi);
+}
 
 void create_menu_sprite(){
 
@@ -43,9 +59,6 @@ void create_menu_sprite(){
   menu_sprite.drawCircle((x_mid+x_max)/2, (y_mid+y_max)/2+15, 30, TFT_WHITE);
   menu_sprite.drawFastHLine(x_mid+30, (y_mid+y_max)/2+15, x_max-x_mid-60, TFT_WHITE);      
   menu_sprite.drawFastVLine((x_mid+x_max)/2, y_mid+30, y_max-y_mid-20, TFT_WHITE);
-
-
-
 }
 
 void create_tracker_sprite(){
@@ -92,6 +105,16 @@ void create_tracker_sprite(){
   tracker_sprite.drawFastVLine(x_min+180, y_min, y_max-y_min, TFT_DARKGREY); 
 }
 
+void create_needle_sprite(){    
+    needle_sprite.createSprite(10,50);
+    needle_sprite.fillSprite(TFT_TRANSPARENT);
+    needle_sprite.fillCircle(5,5,5,TFT_RED);
+    needle_sprite.fillRect(4,1,2,45,TFT_RED);
+    needle_sprite.fillTriangle(3,2,7,2,5,42,TFT_RED);
+    needle_sprite.fillCircle(5,5,3,TFT_BLACK);
+    needle_sprite.setPivot(5,5);
+}
+
 void display_data_point_CLI(double_chain* head){
   /*
   A simple interface to just show the main data of the last points, maybe 3~5 last points.
@@ -118,6 +141,12 @@ void draw_speed_triangle(float speed, int cx, int cy, int r){
   
   //Limit the speed to 20-260
   speed = constrain(speed, 20 ,260);
+  //needle_sprite.setPivot(cx, cy);
+  /*float angle = map(speed, 20, 260, -144, -144);
+  M5.Lcd.setPivot(cx, cy);
+  needle_sprite.pushRotated(angle, TFT_TRANSPARENT);*/
+  //needle_sprite.pushSprite(cx-5, cy-5);
+
 
   uint8_t green = map(speed, 20, 260, 63, 0);
   uint8_t red = map(speed, 20, 260, 0, 31);
@@ -133,6 +162,7 @@ void draw_speed_triangle(float speed, int cx, int cy, int r){
   //M5.Lcd.drawLine(cx, cy, x, y, WHITE);
   M5.Lcd.fillCircle(cx, cy, r, BLACK);
   M5.Lcd.fillTriangle(x1, y1, x2, y2, x3, y3, color);
+  
 }
 
 void draw_direction_triangle(float course, int cx, int cy, int r){
@@ -186,8 +216,10 @@ void display_data_point_GUI(double_chain* head){
 
   tracker_sprite.pushSprite(0, 0);
   draw_direction_triangle(head->data.direction, course_x, course_y, course_r-15);  
-  draw_speed_triangle(head->data.speed, counter_x, counter_y, counter_r-10);  
+  draw_speed_triangle(head->data.speed, counter_x, counter_y, counter_r-10);    
   draw_lean_angle_bar(head->data.roll, 20, 130, 25, 100);  
+  
+
   double_chain* current = head;  
   int index = x_max, prev_roll = current->data.roll, prev_speed = current->data.speed;
   prev_speed = map(prev_speed, 20, 260, y_max, y_min);

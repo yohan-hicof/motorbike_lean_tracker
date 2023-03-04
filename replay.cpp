@@ -27,8 +27,8 @@ void main_replay(){
   double_chain* head = read_data_to_file(replay_file_name);  
   double_chain* tail = find_last_link(head);
   //extract_abstract_data(head);
-  replay_standard_GUI(tail);
-  
+  //replay_standard_GUI(tail);
+  replay_track_GUI(tail);
 }
 
 void extract_abstract_data(double_chain* head){
@@ -72,16 +72,14 @@ void extract_abstract_data(double_chain* head){
   }
 
   curr_link = start_link;
-
-  //Carefull with the time, here we start with the last link, the most recent.
-  if (current != NULL){ //We do the end time only once
-    end_date = current->data.date;
-    end_time = current->data.time;
-    min_lat = current->data.lat;
-    max_lat = current->data.lat;
-    min_lng = current->data.lng;
-    max_lng = current->data.lng;
-  }
+  //Set the default values
+  end_date = current->data.date;
+  end_time = current->data.time;
+  min_lat = current->data.lat;
+  max_lat = current->data.lat;
+  min_lng = current->data.lng;
+  max_lng = current->data.lng;
+  
 
   while(current != NULL && curr_link < end_link){//Get the data to display    
     max_pitch = max(max_pitch, current->data.pitch);
@@ -96,8 +94,8 @@ void extract_abstract_data(double_chain* head){
     start_date = current->data.date;
     start_time = current->data.time;
 
-  current = current->next;
-  curr_link++;    
+    current = current->next;
+    curr_link++;    
   }
 
   average_speed /= end_link-start_link;
@@ -164,5 +162,95 @@ void replay_standard_GUI(double_chain* tail){
     if (M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) return;
     delay(20);
   }
+}
+
+void replay_track_GUI(double_chain* tail){
+
+  double_chain* current = tail;
+  double min_lat, max_lat; 
+  double min_lng, max_lng; 
+  double diff_lat, diff_lng, ratio;
+  uint32_t start_date, end_date;
+  uint32_t start_time, end_time;
+  int shift_x = 5, shift_y = 20;
+  
+  char starting[20], ending[20];
+
+  if(current == NULL){
+    M5.Lcd.printf("Cannot extract data, null pointer given\n Press any button to end.");
+     while(1){
+      M5.update();
+      if (M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) return;
+      delay(20);
+     }    
+  }
+  //Set the starting values
+  end_date = current->data.date;
+  end_time = current->data.time;
+  min_lat = current->data.lat;
+  max_lat = current->data.lat;
+  min_lng = current->data.lng;
+  max_lng = current->data.lng;
+  
+  while(current != NULL){//Get the min/max lat and the end time    
+    min_lat = min(min_lat, current->data.lat);
+    max_lat = max(max_lat, current->data.lat);
+    min_lng = min(min_lng, current->data.lng);
+    max_lng = max(max_lng, current->data.lng);    
+    start_date = current->data.date;
+    start_time = current->data.time;
+    current = current->previous;  
+  }
+  //Now we get the min max for latitude and longitude, we can start displaying
+  current = tail;
+
+  format_date_time(start_date, start_time, starting);
+  format_date_time(end_date, end_time, ending);
+
+  M5.Lcd.setTextSize(1);
+  M5.Lcd.fillScreen(BLACK);  
+  M5.Lcd.setCursor(0, 0); 
+  M5.lcd.printf("Sarting time: %s\n", starting);
+  M5.lcd.printf("Ending time: %s\n", ending);
+
+  //Do the dot per dot display
+  diff_lat = max_lat-min_lat; //y
+  diff_lng = max_lng-min_lng; //x
+
+  if (210.0/diff_lat < 310/diff_lng) {
+    ratio = 210.0/diff_lat;
+    shift_x = (290-diff_lng*ratio)/2;
+  }
+  else{    
+    ratio = 290.0/diff_lng;
+    shift_y = (210-diff_lat*ratio)/2;
+  }
+
+  while(current != NULL){    
+    // Find the coordinate, then compute the color for this pixel
+    int x = shift_x + ratio * (current->data.lng - min_lng);
+    int y = shift_y + ratio * (current->data.lat - min_lat);
+    int speed = speed = constrain(current->data.speed, 20 ,260);
+    uint8_t green = map(speed, 20, 260, 63, 0);
+    uint8_t red = map(speed, 20, 260, 0, 31);
+    uint16_t color = green*32 + red*2048;
+
+    M5.Lcd.setCursor(0, 20); 
+    M5.lcd.printf("Display @ %d, %d", x, y);
+
+    M5.Lcd.drawPixel(x, y, color);
+    delay(10);
+    current = current->previous;
+  }
+
+  if(current == NULL){
+    M5.Lcd.printf("End of replay\n Press any button to end.");
+     while(1){
+      M5.update();
+      if (M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) return;
+      delay(20);
+     }    
+  }
+
 }
 
