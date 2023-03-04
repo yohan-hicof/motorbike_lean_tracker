@@ -25,3 +25,7 @@ The computation of the lean angle is based on the accelerometer and the gyroscop
 -Find a way to estimate the laptime based on gps data.
 
 -Add the state of the battery during tracking and visualization.
+
+#Known bug
+
+There is a bug with reading file with SD card. Some files are not found during listing, but they are found on a PC. When copied, they are then found on the sd card by the M5. Happend only with larger file so far.

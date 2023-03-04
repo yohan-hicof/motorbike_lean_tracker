@@ -231,14 +231,20 @@ bool select_file(fs::FS &fs, char* selected_path){
     }
     //draw_selection_arrows();
     M5.update();
-    if (M5.BtnA.wasPressed()) current_selection = min(nb_files-1, current_selection+1);
+    if (M5.BtnA.wasPressed()){
+      if (current_selection == nb_files-1) current_selection = 0;
+      else current_selection++;            
+    }
     if (M5.BtnB.wasPressed()) {
       sprintf(selected_path, "%s",list_files[current_selection]);
       M5.update();
       delay(250);      
       return true;
     }
-    if (M5.BtnC.wasPressed()) current_selection = max(0, current_selection-1);
+    if (M5.BtnC.wasPressed()) {
+      if (current_selection == 0) current_selection = nb_files-1;
+      else current_selection--;
+    }
 
     delay(100);
   }
