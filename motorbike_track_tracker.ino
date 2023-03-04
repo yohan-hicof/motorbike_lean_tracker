@@ -1,8 +1,10 @@
 /*
 TODO
-Create a way to replay a saved track.
-   Copy the function to select the files from the SD card.
-   Create a function that feed the display slowly by changing the position of the head
+There is a bug in the displaying of the speed.
+Create a way to replay a saved track.   
+   Create a function that feed the display slowly by changing the position of the head   
+   Display track with colored pixel for speed/lean.
+   Replay the normal visualisation.
 Create the sprites from real images.
 Create a menu to configure: Brightness, IMU calib, Set time using GPS 
 */
@@ -175,17 +177,10 @@ void display_bubble(){
 
 }
 
-
-
-
 void loop() {
   // put your main code here, to run repeatedly:
-  //main_tracker_loop();
-  //test_display();
-  //test_roll_pitch();
-  //display_bubble();
   
-    
+ 
   menu_sprite.pushSprite(0, 0);
   M5.update();
   
@@ -196,7 +191,8 @@ void loop() {
       main_tracker_loop();
     }
     if (e.to.x > 170 && e.to.y < 110){
-      //Second quadrant      
+      //Second quadrant
+      main_replay();   
     }
     if (e.to.x < 150 && e.to.y > 130){
       //Third quadrant

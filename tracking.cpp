@@ -41,9 +41,12 @@ void main_tracker_loop(){
   double_chain* current = NULL;
   create_save_file_name();
   create_tracker_sprite();
-  uint32_t last_save;
+  uint32_t last_save; //When was the last time we save on the sd card.
+  uint32_t diff_delay;//When we save of delete link, we have to decrease the delay to stay consistent
+  uint32_t wait_time = 100;//the number of ms we wait between two points
   uint32_t number_of_links = 0;
-  uint32_t last_GUI_update = millis();;
+  uint32_t last_GUI_update = millis();
+
   Serial.begin(9600);
 
   //Wait for the GPS to be running before starting.
@@ -75,16 +78,20 @@ void main_tracker_loop(){
     }
 
     if (millis()-last_save > 2000 && sd_card_found){//Save every 2 seconds      
+      diff_delay = millis();
       write_data_to_file(tail, 50); //We save up to 50 links
       last_save = millis(); //Update the time since last save.      
-      delay(50);//Shorter wait to compensate for the time to write
-      //smartDelay(50);
+      diff_delay = last_save-diff_delay;
+      if (diff_delay < wait_time)
+        delay(wait_time-diff_delay);//Shorter wait to compensate for the time to write      
     }
-    else if (number_of_links > 300){      
-      tail = delete_n_links_from_tails(tail, 100, !sd_card_found); //We keep at least 200 data points
+    else if (number_of_links > 1000){      
+      diff_delay = millis();
+      tail = delete_n_links_from_tails(tail, 600, !sd_card_found); //We keep at least 200 data points
       number_of_links = count_nb_links(head); //Check how many we really have left (may be not all were saved)      
-      delay(50); //Shorter wait to compensate for the time to write
-      //smartDelay(50);
+      diff_delay = millis() - diff_delay;
+      if (diff_delay < wait_time)
+        delay(wait_time-diff_delay);//Shorter wait to compensate for the time to write
     }
     else{
       delay(100);

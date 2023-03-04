@@ -87,3 +87,8 @@ int compare_files_name(const char *name1, const char *name2);
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels);
 char** list_dir_root(fs::FS &fs, char** list_files, int* nb_files);
 bool select_file(fs::FS &fs, char* selected_path);
+
+//Function to replay old files
+void main_replay();
+void extract_abstract_data(double_chain* head);
+void replay_standard_GUI(double_chain* tail);

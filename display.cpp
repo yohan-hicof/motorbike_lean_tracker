@@ -136,8 +136,12 @@ void draw_speed_triangle(float speed, int cx, int cy, int r){
 }
 
 void draw_direction_triangle(float course, int cx, int cy, int r){
-  //We want to display the current direction.
+  //We want to display the current direction.  
+  course = course+180;
+  if (course > 360) course-= 360;
+  
   float angle = course*PI/180;
+  
    
   //pt1: end of needle, pt2,pt3 base of needle
   int x1 = cx + cos(angle)*(r-1), y1 = cy - sin(angle)*(r-1);
@@ -203,20 +207,4 @@ void display_data_point_GUI(double_chain* head){
     index-=2;
     current = current->next;
   }
-
-  
-  delay(1200);
-  /*
-  uint32_t nb_links = 0;
-  double_chain* current = head;
-  M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setCursor(0, 20); 
-  M5.Lcd.print("Pitch  Roll   Speed   Lat   Lon\n");
-  while(current != NULL && nb_links < 10){
-    M5.Lcd.printf("%2.1f  %2.1f  %3.1f  %3.6f %3.6f\n", current->data.pitch, current->data.roll, current->data.speed, current->data.lat, current->data.lng);    
-    nb_links++;
-    current = current->next;
-  }
-  */
-
 }

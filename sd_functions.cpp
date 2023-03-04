@@ -57,8 +57,8 @@ double_chain* read_data_to_file(char* file_name){
     
     if (nb_read > 0){
       current->saved = false;
-      M5.Lcd.printf("Creating head or new node ...");
-      M5.Lcd.printf("for %d (%d)\n", current->data.date, nb_read);
+      //M5.Lcd.printf("Creating head or new node ...");
+      //M5.Lcd.printf("for %d (%d)\n", current->data.date, nb_read);
       if (head == NULL){
         head = current;
         head->next = NULL;
@@ -77,7 +77,6 @@ double_chain* read_data_to_file(char* file_name){
     }
   }while (nb_read > 0);  
   dataFile.close();
-
   return head;
 }
 
@@ -94,7 +93,7 @@ void create_save_file_name(){
     RTC_DateTypeDef RTCDate; //If we save, we need a timestamp
     M5.Rtc.GetTime(&RTCtime);                             
     M5.Rtc.GetDate(&RTCDate);
-    sprintf(save_file_name, "/%d_%02d_%02d_%02d_%02d_%02d.csv", RTCDate.Year,
+    sprintf(save_file_name, "/%d_%02d_%02d_%02d_%02d_%02d.bin", RTCDate.Year,
             RTCDate.Month, RTCDate.Date, RTCtime.Hours, RTCtime.Minutes,
             RTCtime.Seconds);    
   }
