@@ -43,6 +43,12 @@ int count_nb_links(double_chain* head);
 double_chain* delete_after_n_links(double_chain* head, int n = 200, bool only_saved = true);
 double_chain* delete_n_links_from_tails(double_chain* tail, int n, bool only_saved = true);
 
+//Configuration functions
+void config_menu();
+void set_brightness();
+void set_time();
+
+
 //Function to write the data to SD, and to recreate a chain from a file
 int write_data_to_file(double_chain* tail, int nb_links);
 double_chain* read_data_to_file(char* file_name);

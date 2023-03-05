@@ -11,6 +11,7 @@ Create a menu to configure: Brightness, IMU calib, Set time using GPS
 */
 
 #include "main.hpp"
+#include "icon_config.c"
 
 TinyGPSPlus gps; //Creat The TinyGPS++ object.
 HardwareSerial ss(2); // The serial connection to the GPS device.
@@ -94,7 +95,7 @@ void setup() {
   M5.begin();
   //Connect to the gps
   ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
-  M5.IMU.Init();
+  M5.IMU.Init();  
 
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextColor( GREEN, BLACK);
@@ -104,6 +105,9 @@ void setup() {
 
   preferences.begin("imu-calibration", false);
   get_imu_preferences(&preferences);
+
+  //Set the brightness of the screen to a lower value by default to save battery  
+  M5.Axp.SetLcdVoltage(preferences.getInt("brightness", 2900));
 
   //Create the sprite we might use
   create_tracker_sprite();
@@ -115,6 +119,7 @@ void setup() {
   xTaskCreatePinnedToCore(compute_pitch_roll_bg, "pitch_roll_bg", 4096, NULL, 1, NULL, 1);
   //Start the background process of getting feed from the gps
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
+  
   
 
 }
@@ -144,7 +149,6 @@ void test_display(){
     head->data.roll = 0.8*head->next->data.roll + 0.2*random(0, 60);
     
   }
-
 }
 
 void drawSpot(float ax, float ay, float* old_x, float* old_y){
@@ -176,16 +180,181 @@ void display_bubble(){
     drawSpot(roll, pitch, &old_roll, &old_pitch);  
     delay(100);
   }
+}
 
+void set_time(){  
+  
+  uint16_t position = 1;
+  uint16_t posx[] = {0, 27, 72, 110, 142, 173, 217};
+  //Get the current time and data
+  RTC_TimeTypeDef RTCtime; 
+  RTC_DateTypeDef RTCDate; 
+  M5.Rtc.GetTime(&RTCtime);                             
+  M5.Rtc.GetDate(&RTCDate);  
+  //Prepare the display
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setTextColor(GREEN, BLACK);
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.drawJpg(buttons_clock, 11764, 0,182,320,57);
+  //Let the user configure.
+  while (1){
+    
+    M5.Lcd.setCursor(10, 50);
+    M5.Lcd.printf("%02d-%02d-%02d %02dh%02dm%02ds", 
+                  RTCDate.Year, RTCDate.Month, RTCDate.Date, RTCtime.Hours, 
+                  RTCtime.Minutes, RTCtime.Seconds);
+    //Draw a small triangle under the current position
+    M5.Lcd.fillTriangle(posx[position], 85, posx[position]+14, 85, posx[position]+7, 70, TFT_RED);
+    //Get the area pressed by the user.    
+    M5.update();  
+    Event& e = M5.Buttons.event;    
+    if (e & E_TOUCH) {
+      if (e.to.x < 64 && e.to.y > 180){
+        M5.Lcd.fillTriangle(posx[position], 85, posx[position]+14, 85, posx[position]+7, 70, TFT_BLACK);
+        position = max(position-1, 1);
+        M5.Lcd.setCursor(10, 10);
+        M5.Lcd.printf("Curr cursor: %d\n", position);
+        continue;
+      }
+      if (e.to.x > 64 && e.to.x < 128 && e.to.y > 180){
+        M5.Lcd.fillTriangle(posx[position], 85, posx[position]+14, 85, posx[position]+7, 70, TFT_BLACK);
+        position = min(position+1, 6);
+        M5.Lcd.setCursor(10, 10);
+        M5.Lcd.printf("Curr cursor: %d\n", position);
+        continue;
+      }
+      if (e.to.x > 128 && e.to.x < 192 && e.to.y > 180){//We increase the value by one
+        switch(position){
+          case 1:
+            RTCDate.Year = min(RTCDate.Year+1, 2050);
+            break;
+          case 2:
+            RTCDate.Month = min(RTCDate.Month+1, 12);
+            break;
+          case 3:
+            RTCDate.Date = min(RTCDate.Date+1, 31);
+            break;
+          case 4:
+            RTCtime.Hours = min(RTCtime.Hours+1, 23);
+            break;
+          case 5:
+            RTCtime.Minutes = min(RTCtime.Minutes+1, 59);
+            break;
+          case 6:
+            RTCtime.Seconds = min(RTCtime.Seconds+1, 59);            
+            break;
+        }
+        continue;
+      }
+      if (e.to.x > 192 && e.to.x < 256 && e.to.y > 180){//We decrease the value by one
+        switch(position){
+          case 1:
+            RTCDate.Year = max(RTCDate.Year-1, 2020);
+            break;
+          case 2:
+            RTCDate.Month = max(RTCDate.Month-1, 1);
+            break;
+          case 3:
+            RTCDate.Date = max(RTCDate.Date-1, 1);
+            break;
+          case 4:
+            if (RTCtime.Hours > 0) RTCtime.Hours--;            
+            break;
+          case 5:
+            if (RTCtime.Minutes > 0) RTCtime.Minutes--;            
+            break;
+          case 6:
+            if (RTCtime.Seconds > 0) RTCtime.Seconds--;            
+            break;
+        }
+        continue;
+      }
+      if (e.to.x > 256 && e.to.y > 180){//We save the time and date and return
+        M5.Rtc.SetDate(&RTCDate);
+        M5.Rtc.SetTime(&RTCtime);
+        return;
+      }
+      
+      delay(50);
+    }
+
+  }
+
+  /*sprintf(save_file_name, "/%d_%02d_%02d_%02d_%02d_%02d.bin", RTCDate.Year,
+            RTCDate.Month, RTCDate.Date, RTCtime.Hours, RTCtime.Minutes,
+            RTCtime.Seconds);   */
+
+
+}
+
+void set_brightness(){
+
+  M5.Lcd.drawJpg(brightness, 11707, 0,0,320,240);
+  int curr_brightness = preferences.getInt("brightness", 2900);  
+  while (true){ 
+    //progress = map(curr_brightness, 0, 255, 0, 100);
+    //M5.Lcd.progressBar(10, 10, 20, 100, progress);
+
+    M5.update();
+    if (M5.BtnA.wasPressed()){
+      curr_brightness = max(curr_brightness-100, 2500);
+      M5.Axp.SetLcdVoltage(curr_brightness);
+      preferences.putInt("brightness", curr_brightness);
+    }
+    if (M5.BtnB.wasPressed()){
+      return;
+    }
+    if (M5.BtnC.wasPressed()){
+      curr_brightness = min(curr_brightness+100, 3300);
+      M5.Axp.SetLcdVoltage(curr_brightness);
+      preferences.putInt("brightness", curr_brightness);
+    }
+    delay(20);        
+  }
+}
+
+void config_menu(){
+
+  M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);
+  while (1){
+    delay(50);
+    M5.update();  
+    Event& e = M5.Buttons.event;    
+    if (e & E_TOUCH) {
+      if (e.to.x < 150 && e.to.y < 110){
+        delay(50);
+        set_brightness();
+      }
+      if (e.to.x > 170 && e.to.y < 110){
+        //Second quadrant
+        delay(50);
+        calibrationGryo(&preferences);
+        calibrationAccel(&preferences);
+        get_imu_preferences(&preferences);
+        M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);
+      }
+      if (e.to.x < 150 && e.to.y > 130){
+        delay(50);
+        set_time();
+        //Third quadrant
+        //display_bubble();
+      }
+      if (e.to.x > 170 && e.to.y > 130){
+        delay(50);
+        //Fourth quadrant
+        return;      
+      }
+    }
+  }
+  
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   
- 
   menu_sprite.pushSprite(0, 0);
-  M5.update();
-  
+  delay(50);
+  M5.update();  
   Event& e = M5.Buttons.event;    
   if (e & E_TOUCH) {
     if (e.to.x < 150 && e.to.y < 110){
@@ -194,17 +363,18 @@ void loop() {
     }
     if (e.to.x > 170 && e.to.y < 110){
       //Second quadrant
+      delay(50);
       main_replay();   
     }
     if (e.to.x < 150 && e.to.y > 130){
       //Third quadrant
+      delay(50);
       display_bubble();
     }
     if (e.to.x > 170 && e.to.y > 130){
       //Fourth quadrant
-      calibrationGryo(&preferences);
-      calibrationAccel(&preferences);
-      get_imu_preferences(&preferences);
+      delay(50);
+      config_menu();
     }
       
   }
