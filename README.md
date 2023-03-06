@@ -18,8 +18,6 @@ The computation of the lean angle is based on the accelerometer and the gyroscop
 
 -Change the different background from drawn to images.
 
--Do the configuration interface for screen brightness, IMU calibration, and time update.
-
 -Create a python script to allow data visualisation from the saved file.
 
 -Find a way to estimate the laptime based on gps data.
@@ -28,6 +26,12 @@ The computation of the lean angle is based on the accelerometer and the gyroscop
 
 - Following this: https://www.youtube.com/watch?v=SUAqVUN9AuQ to use sprite to display the needle and stop the flickering.
 
-#Known bug
+- Create an image for the main visualization + needle for speed + needle for direction. (in progress)
 
-There is a bug with reading file with SD card. Some files are not found during listing, but they are found on a PC. When copied, they are then found on the sd card by the M5. Happend only with larger file so far.
+- Create a sprite for lean angle as a small biker leaning.
+
+- Modify the config menu to turn on and off the leds.
+
+- Add in the point capture the led if they are activated.
+
+- Add in the replay the leds if they are activated.

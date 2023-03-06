@@ -11,7 +11,7 @@ Create a menu to configure: Brightness, IMU calib, Set time using GPS
 */
 
 #include "main.hpp"
-#include "icon_config.c"
+#include "icons.c"
 
 TinyGPSPlus gps; //Creat The TinyGPS++ object.
 HardwareSerial ss(2); // The serial connection to the GPS device.
@@ -22,7 +22,8 @@ File dataFile;
 bool sd_card_found = false;
 
 Preferences preferences;
-extern TFT_eSprite menu_sprite;
+
+CRGB leds[10];
 
 /*
 float gyro[3] = {0.0F, 0.0F, 0.0F};;
@@ -114,6 +115,10 @@ void setup() {
   create_menu_sprite();
   create_needle_sprite();
 
+  FastLED.addLeds<NEOPIXEL, 25>(leds, 10);
+  fill_solid(leds, 10, CRGB(0, 0, 0));
+  FastLED.show();
+
   //Run them on the second core.
   //Start the computation of pitch and roll in the bg.
   xTaskCreatePinnedToCore(compute_pitch_roll_bg, "pitch_roll_bg", 4096, NULL, 1, NULL, 1);
@@ -121,7 +126,6 @@ void setup() {
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
   
   
-
 }
 
 void test_display(){
@@ -174,10 +178,30 @@ void display_bubble(){
   M5.Lcd.fillScreen(BLACK);
   while (1){
     M5.update();
-    if (M5.BtnB.wasPressed()) return;
-    
+    if (M5.BtnB.wasPressed()) return;    
     return_pitch_roll(&pitch, &roll);
     drawSpot(roll, pitch, &old_roll, &old_pitch);  
+
+    uint8_t green, red;
+    int Croll;
+    Croll = constrain(roll, -65, 65);
+    if (Croll < 10 && Croll > -10){
+      fill_solid(&leds[5], 5, CRGB(0, 255, 0));
+    }
+    else if (Croll < 0){
+      green = map(Croll, 0, -65, 255, 0) ;
+      red = map(Croll, 0, -65, 0, 255) ;  
+      fill_solid(&leds[0], 5, CRGB(0, 0, 0));
+      fill_solid(&leds[5], 5, CRGB(red, green, 0));
+    }
+    else{
+      green = map(Croll, 0, 65, 255, 0) ;
+      red = map(Croll, 0, 65, 0, 255) ;
+      fill_solid(&leds[0], 5, CRGB(red, green, 0));
+      fill_solid(&leds[5], 5, CRGB(0, 0, 0));
+    }    
+    //fill_solid(leds, 10, CRGB(red, green, 0));
+    FastLED.show();
     delay(100);
   }
 }
@@ -279,12 +303,6 @@ void set_time(){
     }
 
   }
-
-  /*sprintf(save_file_name, "/%d_%02d_%02d_%02d_%02d_%02d.bin", RTCDate.Year,
-            RTCDate.Month, RTCDate.Date, RTCtime.Hours, RTCtime.Minutes,
-            RTCtime.Seconds);   */
-
-
 }
 
 void set_brightness(){
@@ -352,7 +370,9 @@ void config_menu(){
 void loop() {
   // put your main code here, to run repeatedly:
   
-  menu_sprite.pushSprite(0, 0);
+  //menu_sprite.pushSprite(0, 0);
+  //main_menu 54750
+  M5.Lcd.drawJpg(main_menu, 26618, 0, 0, 320, 240);
   delay(50);
   M5.update();  
   Event& e = M5.Buttons.event;    

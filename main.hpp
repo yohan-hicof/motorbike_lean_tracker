@@ -8,6 +8,7 @@ Learn to load/save sprites.
 #include <M5Core2.h>
 #include <TinyGPSPlus.h>
 #include <Preferences.h>
+#include <FastLED.h>
 
 //All the part related to the data points
 //So many points
