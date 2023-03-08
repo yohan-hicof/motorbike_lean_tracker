@@ -46,22 +46,18 @@ void main_tracker_loop(){
   uint32_t wait_time = 100;//the number of ms we wait between two points
   uint32_t number_of_links = 0;
   uint32_t last_GUI_update = millis();
-
-  Serial.begin(9600);
-
+  
   //Wait for the GPS to be running before starting.
   wait_for_gps();
   M5.Lcd.fillScreen(BLACK);
   //Get the first data point, then start the loop. This avoid a useless if all the time.  
-  head = create_new_data_point();
-  //head = create_dummy_data_point(number_of_links++);
+  head = create_new_data_point();  
   tail = head;    
   
   delay(100);
   last_save = millis();
   while (true){
-    current = create_new_data_point();
-    //current = create_dummy_data_point(number_of_links);
+    current = create_new_data_point();    
     if (current != NULL){      
       head = add_new_head(head, current);
       number_of_links++;      

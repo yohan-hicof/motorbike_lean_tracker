@@ -27,8 +27,8 @@ void main_replay(){
   double_chain* head = read_data_to_file(replay_file_name);  
   double_chain* tail = find_last_link(head);
   //extract_abstract_data(head);
-  //replay_standard_GUI(tail);
-  replay_track_GUI(tail);
+  replay_standard_GUI(tail);
+  //replay_track_GUI(tail);
 }
 
 void extract_abstract_data(double_chain* head){
@@ -174,7 +174,7 @@ void replay_track_GUI(double_chain* tail){
   uint32_t start_time, end_time;
   int shift_x = 5, shift_y = 20;
   
-  char starting[20], ending[20];
+  char starting[25], ending[25];
 
   if(current == NULL){
     M5.Lcd.printf("Cannot extract data, null pointer given\n Press any button to end.");
@@ -211,7 +211,7 @@ void replay_track_GUI(double_chain* tail){
   M5.Lcd.fillScreen(BLACK);  
   M5.Lcd.setCursor(0, 0); 
   M5.lcd.printf("Sarting time: %s\n", starting);
-  M5.lcd.printf("Ending time: %s\n", ending);
+  M5.lcd.printf("Ending time: %s\n", ending);  
 
   //Do the dot per dot display
   diff_lat = max_lat-min_lat; //y
@@ -235,8 +235,8 @@ void replay_track_GUI(double_chain* tail){
     uint8_t red = map(speed, 20, 260, 0, 31);
     uint16_t color = green*32 + red*2048;
 
-    M5.Lcd.setCursor(0, 20); 
-    M5.lcd.printf("Display @ %d, %d", x, y);
+    //M5.Lcd.setCursor(0, 20); 
+    //M5.lcd.printf("Display @ %d, %d", x, y);
 
     M5.Lcd.drawPixel(x, y, color);
     delay(10);

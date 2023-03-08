@@ -114,6 +114,7 @@ void setup() {
   create_tracker_sprite();
   create_menu_sprite();
   create_needle_sprite();
+  create_direction_sprite();
 
   FastLED.addLeds<NEOPIXEL, 25>(leds, 10);
   fill_solid(leds, 10, CRGB(0, 0, 0));
@@ -307,13 +308,29 @@ void set_time(){
 
 void set_brightness(){
 
-  M5.Lcd.drawJpg(brightness, 11707, 0,0,320,240);
+  M5.Lcd.drawJpg(brightness, 20950, 0,0,320,240);
   int curr_brightness = preferences.getInt("brightness", 2900);  
-  while (true){ 
-    //progress = map(curr_brightness, 0, 255, 0, 100);
-    //M5.Lcd.progressBar(10, 10, 20, 100, progress);
-
+  while (true){     
     M5.update();
+    Event& e = M5.Buttons.event;    
+    if (e & E_TOUCH) {
+      if (e.to.x < 64 && e.to.y > 40 && e.to.y < 200){
+        //Turn of the led, save the preference
+        fill_solid(leds, 10, CRGB(0, 0, 0));
+        FastLED.show();
+        preferences.putBool("show_led", false);
+        continue;
+      }
+      if (e.to.x > 256 && e.to.y > 40 && e.to.y < 200){
+        //Turn on the led, save the preference
+        fill_solid(leds, 10, CRGB(0, 255, 0));
+        FastLED.show();
+        preferences.putBool("show_led", true);
+        continue;
+      }
+    }
+
+
     if (M5.BtnA.wasPressed()){
       curr_brightness = max(curr_brightness-100, 2500);
       M5.Axp.SetLcdVoltage(curr_brightness);
@@ -332,14 +349,15 @@ void set_brightness(){
 }
 
 void config_menu(){
-
-  M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);
+  
   while (1){
+    M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);
     delay(50);
     M5.update();  
     Event& e = M5.Buttons.event;    
     if (e & E_TOUCH) {
       if (e.to.x < 150 && e.to.y < 110){
+        //First quadrant
         delay(50);
         set_brightness();
       }
@@ -348,18 +366,16 @@ void config_menu(){
         delay(50);
         calibrationGryo(&preferences);
         calibrationAccel(&preferences);
-        get_imu_preferences(&preferences);
-        M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);
+        get_imu_preferences(&preferences);        
       }
       if (e.to.x < 150 && e.to.y > 130){
-        delay(50);
-        set_time();
         //Third quadrant
-        //display_bubble();
+        delay(50);
+        set_time();        
       }
       if (e.to.x > 170 && e.to.y > 130){
-        delay(50);
         //Fourth quadrant
+        delay(50);        
         return;      
       }
     }

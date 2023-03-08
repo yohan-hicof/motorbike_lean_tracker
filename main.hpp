@@ -82,13 +82,16 @@ void main_tracker_loop();
 //Displaying the current state
 void format_date_time(uint32_t date, uint32_t time, char* string_time);
 
+void update_led(int angle);
+
 void create_tracker_sprite();
 void create_menu_sprite();
 void create_needle_sprite();
+void create_direction_sprite();
 
 void draw_speed_triangle(float speed, int cx, int cy, int r);
 void draw_direction_triangle(float course, int cx, int cy, int r);
-void draw_lean_angle_bar(float lean, int cx, int cy, int w, int h);
+void draw_lean_angle_bar(float lean, int w, int h);
 void display_data_point_CLI(double_chain* head);
 void display_data_point_GUI(double_chain* head);
 

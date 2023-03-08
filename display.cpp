@@ -3,9 +3,18 @@
 TFT_eSprite tracker_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite menu_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite needle_sprite = TFT_eSprite(&M5.Lcd);
+TFT_eSprite direction_sprite = TFT_eSprite(&M5.Lcd);
+TFT_eSprite lean_bar_sprite = TFT_eSprite(&M5.Lcd);
+TFT_eSprite bike_sprite = TFT_eSprite(&M5.Lcd);
+
 int course_x = 80, course_y = 65, course_r = 50;
 int counter_x = 235, counter_y = 65, counter_r = 50;
 int x_min = 60, x_max = 300, y_min = 150, y_max = 230;
+
+extern CRGB leds[10];
+extern Preferences preferences;
+extern const unsigned char tracker_bg[14442];
+extern const unsigned char CBR600[4188];
 
 
 void format_date_time(uint32_t date, uint32_t time, char* string_time){
@@ -105,14 +114,24 @@ void create_tracker_sprite(){
   tracker_sprite.drawFastVLine(x_min+180, y_min, y_max-y_min, TFT_DARKGREY); 
 }
 
-void create_needle_sprite(){    
-    needle_sprite.createSprite(10,50);
+
+void create_needle_sprite(){
+    uint16_t couleur = 0x9185;
+    needle_sprite.createSprite(20,80);
     needle_sprite.fillSprite(TFT_TRANSPARENT);
-    needle_sprite.fillCircle(5,5,5,TFT_RED);
-    needle_sprite.fillRect(4,1,2,45,TFT_RED);
-    needle_sprite.fillTriangle(3,2,7,2,5,42,TFT_RED);
-    needle_sprite.fillCircle(5,5,3,TFT_BLACK);
-    needle_sprite.setPivot(5,5);
+    needle_sprite.fillCircle(10,10,10,couleur);
+    needle_sprite.fillRect(8,2,4,75,couleur);
+    needle_sprite.fillTriangle(6,4,14,4,10,72,couleur);
+    needle_sprite.fillCircle(10,10,6,TFT_BLACK);
+    needle_sprite.setPivot(10,10);
+}
+
+void create_direction_sprite(){    
+    direction_sprite.createSprite(8,65);
+    direction_sprite.fillSprite(TFT_TRANSPARENT);    
+    //direction_sprite.fillTriangle(0,60,8,60,4,65,TFT_BLUE);
+    direction_sprite.fillCircle(4,60,4,TFT_BLUE);
+    direction_sprite.setPivot(4,0);
 }
 
 void display_data_point_CLI(double_chain* head){
@@ -141,13 +160,7 @@ void draw_speed_triangle(float speed, int cx, int cy, int r){
   
   //Limit the speed to 20-260
   speed = constrain(speed, 20 ,260);
-  //needle_sprite.setPivot(cx, cy);
-  /*float angle = map(speed, 20, 260, -144, -144);
-  M5.Lcd.setPivot(cx, cy);
-  needle_sprite.pushRotated(angle, TFT_TRANSPARENT);*/
-  //needle_sprite.pushSprite(cx-5, cy-5);
-
-
+  
   uint8_t green = map(speed, 20, 260, 63, 0);
   uint8_t red = map(speed, 20, 260, 0, 31);
   uint16_t color = green*32 + red*2048;
@@ -182,23 +195,60 @@ void draw_direction_triangle(float course, int cx, int cy, int r){
   M5.Lcd.fillTriangle(x1, y1, x2, y2, x3, y3, LIGHTGREY);
 }
 
-void draw_lean_angle_bar(float lean, int cx, int cy, int w, int h){
+void draw_lean_angle_bar(float lean, int w, int h){
   //Draw a rectangle on the bottom left of the screen to indicate the current lean angle.
   //The color is also proportional to the lean angle  
 
   //Limit the lean angle to 0-65, only positive   
-  int max_lean = 65;
-  lean = constrain(fabs(lean), 0, max_lean);  
-  float height = map(lean, 0, max_lean, 0, h);
+  int max_lean = 65, centre_x = w/2;
+  lean = constrain(lean, -max_lean, max_lean);
 
-  uint8_t green = map(lean, 0, max_lean, 63, 0);
-  uint8_t red = map(lean, 0, max_lean, 0, 31);
+  uint8_t green = map(fabs(lean), 0, max_lean, 63, 0);
+  uint8_t red = map(fabs(lean), 0, max_lean, 0, 31);
   uint16_t color = green*32 + red*2048;
   
-  M5.lcd.fillRect(cx, cy+h-height, w, height, color);
-  M5.lcd.fillRect(cx, cy, w, h-height, BLACK);
-  M5.lcd.drawRect(cx, cy, w, h, TFT_LIGHTGREY);  
+  lean_bar_sprite.createSprite(w, h);
+  lean_bar_sprite.setPivot(w/2,h/2);
+
+  if (lean < 0){
+    lean_bar_sprite.fillRect(0, 0, max_lean+lean, h, BLACK);
+    lean_bar_sprite.fillRect(centre_x, 0, max_lean, h, BLACK);
+    lean_bar_sprite.fillRect(centre_x+lean, 0, -lean, h, color);
+  }
+  else{
+    lean_bar_sprite.fillRect(0, 0, max_lean, h, BLACK);    
+    lean_bar_sprite.fillRect(centre_x, 0, lean, h, color);
+    lean_bar_sprite.fillRect(centre_x+lean, 0, max_lean-lean, h, BLACK);
+  }
+
+  lean_bar_sprite.drawFastVLine(centre_x, 0, h, TFT_NAVY);
+  lean_bar_sprite.drawRect(0, 0, w, h, TFT_LIGHTGREY);
 }
+
+void update_led(int angle){
+
+  //Display the LED if need depending on the angle.
+
+  uint8_t green, red;
+  angle = constrain(angle, -65, 65);
+  if (angle < 10 && angle > -10){
+    fill_solid(&leds[5], 5, CRGB(0, 255, 0));
+  }
+  else if (angle < 0){
+    green = map(angle, 0, -65, 255, 0) ;
+    red = map(angle, 0, -65, 0, 255) ;  
+    fill_solid(&leds[0], 5, CRGB(0, 0, 0));
+    fill_solid(&leds[5], 5, CRGB(red, green, 0));
+  }
+  else{
+    green = map(angle, 0, 65, 255, 0) ;
+    red = map(angle, 0, 65, 0, 255) ;
+    fill_solid(&leds[0], 5, CRGB(red, green, 0));
+    fill_solid(&leds[5], 5, CRGB(0, 0, 0));
+  }  
+  FastLED.show();
+}
+
 
 void display_data_point_GUI(double_chain* head){
   /*
@@ -209,34 +259,56 @@ void display_data_point_GUI(double_chain* head){
   //Top right: Speed counter
   //Bottom left current lean angle.
   //Bottm right: lean angle historic (and speed ?)
+  //We also display the LED if required
 
   if(head == NULL){ //Nothing to display
     return;
   }
+  bike_sprite.createSprite(35,70);
+  bike_sprite.drawJpg(CBR600, 4188, 0,0,35,70);
+  bike_sprite.setPivot(17, 35);
 
-  tracker_sprite.pushSprite(0, 0);
-  draw_direction_triangle(head->data.direction, course_x, course_y, course_r-15);  
-  draw_speed_triangle(head->data.speed, counter_x, counter_y, counter_r-10);    
-  draw_lean_angle_bar(head->data.roll, 20, 130, 25, 100);  
-  
+  tracker_sprite.createSprite(320, 240);
+  tracker_sprite.drawJpg(tracker_bg, 14442, 0,0,320,240);
+  //Needle for the speed.
+  tracker_sprite.setPivot(218, 101); //Pivot for the speed needle
+  int angle = map(head->data.speed, 0, 280, 75, 285);
+  needle_sprite.pushRotated(&tracker_sprite, angle, TFT_TRANSPARENT);
+  //Needle for the direction.
+  tracker_sprite.setPivot(66, 173);
+  direction_sprite.pushRotated(&tracker_sprite, head->data.direction, TFT_TRANSPARENT);
+  //Lean angle bar
+  tracker_sprite.setPivot(75, 10);
+  draw_lean_angle_bar(head->data.roll, 131, 15);
+  lean_bar_sprite.pushRotated(&tracker_sprite, 0, TFT_TRANSPARENT);
+  //display the biker
+  tracker_sprite.setPivot(65, 70);
+  bike_sprite.pushRotated(&tracker_sprite, head->data.roll, TFT_TRANSPARENT);
+
+  tracker_sprite.pushSprite(0,0,TFT_TRANSPARENT);
+   
+  if (preferences.getBool("show_led", false)) update_led((int)head->data.roll);
 
   double_chain* current = head;  
-  int index = x_max, prev_roll = current->data.roll, prev_speed = current->data.speed;
+  int index = 310, prev_roll = current->data.roll, prev_speed = current->data.speed;
   prev_speed = map(prev_speed, 20, 260, y_max, y_min);
   prev_roll = map(fabs(prev_roll), 0, 65, y_max, y_max-65);
   
-  while (current != NULL && index > x_min){
-    int curr_roll = current->data.roll;
+  while (current != NULL && index > 140){
+    int curr_roll = constrain(current->data.roll, -65, 65);
     int curr_speed = current->data.speed;
-    curr_speed = map(curr_speed, 20, 260, y_max, y_min);
-    curr_roll = map(fabs(curr_roll), 0, 65, y_max, y_max-65);
+    curr_speed = map(curr_speed, 0, 260, 232, 142);
+    curr_roll = map(fabs(curr_roll), 0, 65, 232, 167);
         
-    M5.lcd.drawLine(index-2, curr_roll, index, prev_roll, GREEN);
-    M5.lcd.drawLine(index-2, curr_speed, index, prev_speed, BLUE);
+    //M5.lcd.drawLine(index-2, curr_roll, index, prev_roll, GREEN);
+    //M5.lcd.drawLine(index-2, curr_speed, index, prev_speed, BLUE);
+    M5.lcd.drawLine(index-1, curr_roll, index, prev_roll, GREEN);
+    M5.lcd.drawLine(index-1, curr_speed, index, prev_speed, BLUE);
     
     prev_roll = curr_roll;
     prev_speed = curr_speed;
-    index-=2;
+    //index-=2;
+    index--;
     current = current->next;
   }
 }
