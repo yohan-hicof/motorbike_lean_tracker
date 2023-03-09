@@ -40,7 +40,7 @@ void main_tracker_loop(){
   double_chain* tail = NULL;
   double_chain* current = NULL;
   create_save_file_name();
-  create_tracker_sprite();
+  //create_tracker_sprite();
   uint32_t last_save; //When was the last time we save on the sd card.
   uint32_t diff_delay;//When we save of delete link, we have to decrease the delay to stay consistent
   uint32_t wait_time = 100;//the number of ms we wait between two points

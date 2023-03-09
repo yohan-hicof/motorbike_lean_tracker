@@ -1,14 +1,3 @@
-/*
-TODO
-There is a bug in the displaying of the speed.
-Create a way to replay a saved track.   
-   Create a function that feed the display slowly by changing the position of the head   
-   Display track with colored pixel for speed/lean.
-   Replay the normal visualisation.
-   https://www.youtube.com/watch?v=SUAqVUN9AuQ&t=9s For sprite movement, instead of drawing triangles
-Create the sprites from real images.
-Create a menu to configure: Brightness, IMU calib, Set time using GPS 
-*/
 
 #include "main.hpp"
 #include "icons.c"
@@ -111,8 +100,8 @@ void setup() {
   M5.Axp.SetLcdVoltage(preferences.getInt("brightness", 2900));
 
   //Create the sprite we might use
-  create_tracker_sprite();
-  create_menu_sprite();
+  //create_tracker_sprite();
+  //create_menu_sprite();
   create_needle_sprite();
   create_direction_sprite();
 
@@ -136,7 +125,6 @@ void test_display(){
   
   int cpt = 0;
   double_chain *head = create_dummy_data_point(cpt++), *next;
-  create_tracker_sprite();
 
   head->data.speed = random(50, 200);
   head->data.direction = random(0, 360);

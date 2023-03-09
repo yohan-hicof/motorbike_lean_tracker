@@ -24,13 +24,7 @@ Tool used for the pixelization of the CBR: https://giventofly.github.io/pixelit/
 
 -Find a way to estimate the laptime based on gps data.
 
--Add the state of the battery during tracking and visualization.
-
-- Following this: https://www.youtube.com/watch?v=SUAqVUN9AuQ to use sprite to display the needle and stop the flickering.
-
-- Create an image for the main visualization + needle for speed + needle for direction. (in progress)
-
-- Modify the config menu to turn on and off the leds.
+-Add the state of the battery during tracking and visualization. : https://community.m5stack.com/topic/2994/core2-how-to-know-the-current-battery-level/9
 
 - Add in the point capture the led if they are activated.
 
