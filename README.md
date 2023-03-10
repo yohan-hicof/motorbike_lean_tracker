@@ -11,10 +11,12 @@ The computation of the lean angle is based on the accelerometer and the gyroscop
 Tool used for the pixelization of the CBR: https://giventofly.github.io/pixelit/#tryit
 
 Illustration of the interface
+
 ![Main menu](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/main_screen.png)
 ![Main capture screen](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/capture_screen.png)
-![Configuration menu](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/config_screen.png)
 ![Replay menu](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/replay_screen.png)
+![Configuration menu](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/config_screen.png)
+
 
 
 
