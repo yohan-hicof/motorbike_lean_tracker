@@ -1,5 +1,7 @@
 #include "main.hpp"
 
+extern const unsigned char replay_menu[17530];
+
 void main_replay(){
   //Main function handling the replay.
   //First, we select the file we should replay.
@@ -21,14 +23,45 @@ void main_replay(){
     return;
   }
 
-  M5.Lcd.fillScreen(BLACK);  
-  M5.Lcd.setCursor(0, 10);  
   //Read the selected file.
   double_chain* head = read_data_to_file(replay_file_name);  
   double_chain* tail = find_last_link(head);
-  //extract_abstract_data(head);
-  replay_standard_GUI(tail);
-  //replay_track_GUI(tail);
+  
+  while (true){
+    M5.Lcd.drawJpg(replay_menu, 17530, 0,0,320,240);
+    delay(20);
+    M5.update();
+    Event& e = M5.Buttons.event;    
+    if (e & E_TOUCH) {
+      if (e.to.x < 155 && e.to.y < 115){
+        //Replay with track
+        replay_track_GUI(tail);
+        continue;
+      }
+      if (e.to.x > 165 && e.to.y < 115){
+        //Replay with the standard display
+        replay_standard_GUI(tail);
+        continue;
+      }
+      if (e.to.x < 155 && e.to.y > 125 && e.to.y < 210){
+        //Select a file
+        is_valid = select_file(SD, replay_file_name);
+        if (!is_valid) return;
+        double_chain* head = read_data_to_file(replay_file_name);  
+        double_chain* tail = find_last_link(head);
+        continue;
+      }
+      if (e.to.x > 160 && e.to.x < 240 && e.to.y > 125 && e.to.y < 210){
+        //summary of the file.
+        extract_abstract_data(head);
+        continue;
+      }
+      if (e.to.x > 240 && e.to.y > 125 && e.to.y < 210){
+        //Quit the replay menu        
+        return;
+      }
+    }
+  }
 }
 
 void extract_abstract_data(double_chain* head){
@@ -46,9 +79,10 @@ void extract_abstract_data(double_chain* head){
   double max_speed = 0, average_speed = 0;  
   double min_lat, max_lat; 
   double min_lng, max_lng; 
-  uint32_t start_date, end_date;
-  uint32_t start_time, end_time;
+  uint32_t start_date, end_date, start_time, end_time, diff_time;
   int32_t nb_links, start_link = 0, end_link = 0, curr_link;
+
+  char starting[25], ending[25];
 
   if(current == NULL){
     M5.Lcd.printf("Cannot extract data, null pointer given\n Press any button to end.");
@@ -100,12 +134,17 @@ void extract_abstract_data(double_chain* head){
 
   average_speed /= end_link-start_link;
 
+  format_date_time(start_date, start_time, starting);
+  format_date_time(end_date, end_time, ending);
+  time_difference(start_time, end_time, &diff_time);
+
   M5.Lcd.setTextSize(1);
   M5.Lcd.fillScreen(BLACK);  
   M5.Lcd.setCursor(0, 10); 
   M5.lcd.printf("Number of links: %d, start/end %d/%d\n", nb_links, start_link, end_link);
-  M5.lcd.printf("Start time: %d:%d\n", start_date, start_time);
-  M5.lcd.printf("End time: %d:%d\n", end_date, end_time);
+  M5.lcd.printf("Start time: %s\n", starting);
+  M5.lcd.printf("End time: %s\n", ending);
+  M5.lcd.printf("Duration: %d\n", diff_time);
   M5.lcd.printf("Max speed: %3.2f\n", max_speed);
   M5.lcd.printf("Mean speed: %3.2f\n", average_speed);
   M5.lcd.printf("Max pitch: %3.2f\n", max_pitch);
@@ -131,6 +170,7 @@ void replay_standard_GUI(double_chain* tail){
 
   double_chain* current = tail;
   int curr_link = 0;
+  uint32_t wait_time = 20;
 
   if(current == NULL){
     M5.Lcd.printf("Cannot extract data, null pointer given\n Press any button to end.");
@@ -152,11 +192,15 @@ void replay_standard_GUI(double_chain* tail){
   while (current->previous != NULL){ //We know current is not NULL
     display_data_point_GUI(current);
     current = current->previous;
-    delay(20);
+    delay(wait_time);
+    M5.update();
+    if (M5.BtnA.wasPressed()) wait_time = max(10.0, wait_time*0.75);
+    if (M5.BtnB.wasPressed()) wait_time = min(100.0, wait_time*1.5);
+    if (M5.BtnC.wasPressed()) break;
   }
   
   M5.Lcd.setCursor(0,110);
-  M5.Lcd.printf("End of replay.\n Press any button to continue.");
+  M5.Lcd.printf("End of replay.\nPress any button to continue.");
   while(1){
     M5.update();
     if (M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) return;

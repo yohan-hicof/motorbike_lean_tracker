@@ -14,22 +14,6 @@ Preferences preferences;
 
 CRGB leds[10];
 
-/*
-float gyro[3] = {0.0F, 0.0F, 0.0F};;
-float accel[3] = {0.0F, 0.0F, 0.0F}; //The acceleration data
-float offset_gyro[3] = {0.0F, 0.0F, 0.0F}; 
-float offset_accel[3] = {0.0F, 0.0F, 0.0F}; //The offset of the acceleration
-*/
-
-void smartDelay(unsigned long ms) {
-  //Delay function adapated for the GPS. 
-  //Instead of just waiting, get the latest data from the GPS
-  unsigned long start = millis();
-  do {
-    while (ss.available()) gps.encode(ss.read());
-  } while (millis() - start < ms);
-}
-
 void feed_gps_bg(void* pvParameters){
   //Process in the background.
   //It feed regularly the gps object with new data from the gps.

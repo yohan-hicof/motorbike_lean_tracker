@@ -16,10 +16,10 @@ extern Preferences preferences;
 extern const unsigned char tracker_bg[14442];
 extern const unsigned char CBR600[4188];
 
-
 void format_date_time(uint32_t date, uint32_t time, char* string_time){
   //Convert two int containing date and time into a single char*
-  //We assume the char* has at least 20 char allocated.
+  //We assume the char* has at least 25 char allocated.
+  //The date as the following format: YYMMDD, the time: HHMMSSCC
   int year, month, day, hour, minute, second, centi;
   year = date/10000;
   month = (date/100)%100;
@@ -30,6 +30,38 @@ void format_date_time(uint32_t date, uint32_t time, char* string_time){
   centi = time%100;
 
   sprintf(string_time, "%02d-%02d-%02d %02d-%02d-%02d-%02d\0", year, month, day, hour, minute, second, centi);
+}
+
+void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff){
+  //We assume that this is the same day.
+  //The time is as follow: HHMMSSCC
+  uint32_t bhour, bminute, bsecond, bcenti;
+  uint32_t ehour, eminute, esecond, ecenti; 
+  
+  bhour = time_beg/1000000;
+  bminute = (time_beg/10000)%100;
+  bsecond = (time_beg/100)%100;
+  bcenti = time_beg%100;
+
+  ehour = time_end/1000000;
+  eminute = (time_end/10000)%100;
+  esecond = (time_end/100)%100;
+  ecenti = time_end%100;
+
+  //Convert into centi second, take the diff
+  time_beg = bcenti + 100*bsecond + 60*100*bminute + 60*60*100*bhour;
+  time_end = ecenti + 100*esecond + 60*100*eminute + 60*60*100*ehour;
+  time_end -= time_beg;
+  //Convert back to hours, minutes, second, centisecond
+  bhour = time_end/60*60*100;
+  time_end -= bhour*60*60*100;
+  bminute = time_end/60*100;
+  time_end -= bminute*60*100;
+  bsecond = time_end/100;
+  time_end -= bsecond*100;
+  bcenti = time_end;
+  //Store the data
+  *time_diff = 1000000*bhour + 10000*bminute + 100*bsecond + bcenti;
 }
 
 void create_needle_sprite(){

@@ -30,7 +30,6 @@ typedef struct double_chain{
   struct double_chain* previous;
 }double_chain_t;
 
-void smartDelay(unsigned long ms);
 void feed_gps_bg(void* pvParameters); //To replace smartDelay, feed the gps in the background
 
 //Functions linked to the data structure.
@@ -48,7 +47,6 @@ double_chain* delete_n_links_from_tails(double_chain* tail, int n, bool only_sav
 void config_menu();
 void set_brightness();
 void set_time();
-
 
 //Function to write the data to SD, and to recreate a chain from a file
 int write_data_to_file(double_chain* tail, int nb_links);
@@ -81,6 +79,7 @@ void main_tracker_loop();
 
 //Displaying the current state
 void format_date_time(uint32_t date, uint32_t time, char* string_time);
+void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff);
 
 void update_led(int angle);
 
