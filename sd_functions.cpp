@@ -260,7 +260,64 @@ bool select_file(fs::FS &fs, char* selected_path){
 
     delay(100);
   }
-
   return true;
+}
 
+bool M5Screen2bmp(const char * path){
+  //Function to take a screenshot and write on the SD card.
+  //Copied from there:
+  //https://www.hackster.io/hague/m5stack-screen-capture-and-remote-control-142cfe
+    
+  File file = SD.open(path, FILE_WRITE);
+
+  if(file != NULL){
+    int image_height = M5.Lcd.height();
+    int image_width = M5.Lcd.width();
+    const uint pad=(4-(3*image_width)%4)%4;
+    uint filesize=54+(3*image_width+pad)*image_height; 
+    unsigned char header[54] = { 
+      'B','M',  // BMP signature (Windows 3.1x, 95, NT, …)
+      0,0,0,0,  // image file size in bytes
+      0,0,0,0,  // reserved
+      54,0,0,0, // start of pixel array
+      40,0,0,0, // info header size
+      0,0,0,0,  // image width
+      0,0,0,0,  // image height
+      1,0,      // number of color planes
+      24,0,     // bits per pixel
+      0,0,0,0,  // compression
+      0,0,0,0,  // image size (can be 0 for uncompressed images)
+      0,0,0,0,  // horizontal resolution (dpm)
+      0,0,0,0,  // vertical resolution (dpm)
+      0,0,0,0,  // colors in color table (0 = none)
+      0,0,0,0 };// important color count (0 = all colors are important)
+    // fill filesize, width and heigth in the header array
+    for(uint i=0; i<4; i++) {
+        header[ 2+i] = (char)((filesize>>(8*i))&255);
+        header[18+i] = (char)((image_width   >>(8*i))&255);
+        header[22+i] = (char)((image_height  >>(8*i))&255);
+    }
+    // write the header to the file
+    file.write(header, 54);
+    
+    // To keep the required memory low, the image is captured line by line
+    unsigned char line_data[image_width*3+pad];
+    // initialize padded pixel with 0 
+    for(int i=(image_width-1)*3; i<(image_width*3+pad); i++){
+      line_data[i]=0;
+    }    
+    for(int y=image_height; y>0; y--){     
+      M5.Lcd.readRectRGB(0, y-1, image_width, 1, line_data);
+      for(int x=0; x<image_width; x++){
+        unsigned char r_buff = line_data[x*3];
+        line_data[x*3] = line_data[x*3+2];
+        line_data[x*3+2] = r_buff;
+      }
+      // write the line to the file
+      file.write(line_data, (image_width*3)+pad);
+    }
+    file.close();    
+    return true;
+  }
+  return false;
 }

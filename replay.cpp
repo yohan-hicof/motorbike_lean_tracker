@@ -28,7 +28,7 @@ void main_replay(){
   double_chain* tail = find_last_link(head);
   
   while (true){
-    M5.Lcd.drawJpg(replay_menu, 17530, 0,0,320,240);
+    M5.Lcd.drawJpg(replay_menu, 17530, 0,0,320,240);        
     delay(20);
     M5.update();
     Event& e = M5.Buttons.event;    
@@ -82,7 +82,7 @@ void extract_abstract_data(double_chain* head){
   uint32_t start_date, end_date, start_time, end_time, diff_time;
   int32_t nb_links, start_link = 0, end_link = 0, curr_link;
 
-  char starting[25], ending[25];
+  char starting[25], ending[25], duration[25];
 
   if(current == NULL){
     M5.Lcd.printf("Cannot extract data, null pointer given\n Press any button to end.");
@@ -137,14 +137,15 @@ void extract_abstract_data(double_chain* head){
   format_date_time(start_date, start_time, starting);
   format_date_time(end_date, end_time, ending);
   time_difference(start_time, end_time, &diff_time);
+  format_time(diff_time, duration);
 
-  M5.Lcd.setTextSize(1);
+  M5.Lcd.setTextSize(2);
   M5.Lcd.fillScreen(BLACK);  
   M5.Lcd.setCursor(0, 10); 
-  M5.lcd.printf("Number of links: %d, start/end %d/%d\n", nb_links, start_link, end_link);
-  M5.lcd.printf("Start time: %s\n", starting);
-  M5.lcd.printf("End time: %s\n", ending);
-  M5.lcd.printf("Duration: %d\n", diff_time);
+  //M5.lcd.printf("Number of links: %d, start/end %d/%d\n", nb_links, start_link, end_link);
+  M5.lcd.printf("Start time: \n  %s\n", starting);
+  M5.lcd.printf("End time: \n  %s\n", ending);
+  M5.lcd.printf("Duration: %s\n", duration);
   M5.lcd.printf("Max speed: %3.2f\n", max_speed);
   M5.lcd.printf("Mean speed: %3.2f\n", average_speed);
   M5.lcd.printf("Max pitch: %3.2f\n", max_pitch);
@@ -154,7 +155,7 @@ void extract_abstract_data(double_chain* head){
   M5.lcd.printf("Min lng: %3.6f\n", min_lng);
   M5.lcd.printf("Max lng: %3.6f\n", max_lng);
 
-  M5.Lcd.printf("Press any button to continue\n");
+  M5.Lcd.printf("Press any button to quit\n");
   while(1){
     M5.update();
     if (M5.BtnA.wasPressed() || M5.BtnB.wasPressed() || M5.BtnC.wasPressed()) 

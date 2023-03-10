@@ -32,6 +32,19 @@ void format_date_time(uint32_t date, uint32_t time, char* string_time){
   sprintf(string_time, "%02d-%02d-%02d %02d-%02d-%02d-%02d\0", year, month, day, hour, minute, second, centi);
 }
 
+void format_time(uint32_t time, char* string_time){
+  //Convert two int containing date and time into a single char*
+  //We assume the char* has at least 25 char allocated.
+  //The date as the following format: YYMMDD, the time: HHMMSSCC
+  int hour, minute, second, centi;  
+  hour = time/1000000;
+  minute = (time/10000)%100;
+  second = (time/100)%100;
+  centi = time%100;
+
+  sprintf(string_time, "%02d-%02d-%02d-%02d\0", hour, minute, second, centi);
+}
+
 void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff){
   //We assume that this is the same day.
   //The time is as follow: HHMMSSCC
@@ -53,9 +66,9 @@ void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff){
   time_end = ecenti + 100*esecond + 60*100*eminute + 60*60*100*ehour;
   time_end -= time_beg;
   //Convert back to hours, minutes, second, centisecond
-  bhour = time_end/60*60*100;
+  bhour = time_end/(60*60*100);
   time_end -= bhour*60*60*100;
-  bminute = time_end/60*100;
+  bminute = time_end/(60*100);
   time_end -= bminute*60*100;
   bsecond = time_end/100;
   time_end -= bsecond*100;
@@ -216,6 +229,6 @@ void display_data_point_GUI(double_chain* head){
     prev_speed = curr_speed;
     //index-=2;
     index--;
-    current = current->next;
+    current = current->next;    
   }
 }

@@ -64,6 +64,8 @@ void test_write_read(){
   
 }
 
+
+
 void setup() {
   
   M5.begin();
@@ -320,10 +322,9 @@ void set_brightness(){
   }
 }
 
-void config_menu(){
-  
+void config_menu(){    
   while (1){
-    M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);
+    M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);    
     delay(50);
     M5.update();  
     Event& e = M5.Buttons.event;    
@@ -360,7 +361,7 @@ void loop() {
   
   //menu_sprite.pushSprite(0, 0);
   //main_menu 54750
-  M5.Lcd.drawJpg(main_menu, 26618, 0, 0, 320, 240);
+  M5.Lcd.drawJpg(main_menu, 26618, 0, 0, 320, 240);  
   delay(50);
   M5.update();  
   Event& e = M5.Buttons.event;    

@@ -53,6 +53,7 @@ int write_data_to_file(double_chain* tail, int nb_links);
 double_chain* read_data_to_file(char* file_name);
 void check_sd_card();
 void create_save_file_name();
+bool M5Screen2bmp(const char * path);
 
 
 //Functions linked to the IMU
@@ -79,6 +80,7 @@ void main_tracker_loop();
 
 //Displaying the current state
 void format_date_time(uint32_t date, uint32_t time, char* string_time);
+void format_time(uint32_t time, char* string_time);
 void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff);
 
 void update_led(int angle);

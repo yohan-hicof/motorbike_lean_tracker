@@ -14,7 +14,7 @@ Tool used for the pixelization of the CBR: https://giventofly.github.io/pixelit/
 
 -Improve the description of the readme and add images.
 
--Allow the recorded data to be replayed. (in progress)
+-Allow the recorded data to be replayed. (in progress): in the track replay, show more info, like current speed, current lean
 
 -Create another interface to see the track according to the gps data.
 
