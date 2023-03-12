@@ -77,6 +77,40 @@ void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff){
   *time_diff = 1000000*bhour + 10000*bminute + 100*bsecond + bcenti;
 }
 
+void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour) {
+    byte seg = 6;  // Segments are 3 degrees wide = 120 segments for 360 degrees
+    byte inc = 6;  // Draw segments every 3 degrees, increase to 6 for segmented ring
+
+    // Calculate first pair of coordinates for segment start
+    float deg2grad = 0.0174532925;
+    float sx    = cos((start_angle - 90) * deg2grad);
+    float sy    = sin((start_angle - 90) * deg2grad);
+    uint16_t x0 = sx * (rx - w) + x;
+    uint16_t y0 = sy * (ry - w) + y;
+    uint16_t x1 = sx * rx + x;
+    uint16_t y1 = sy * ry + y;
+
+    // Draw colour blocks every inc degrees
+    for (int i = start_angle; i < start_angle + seg * seg_count; i += inc) {
+        // Calculate pair of coordinates for segment end
+        float sx2 = cos((i + seg - 90) * deg2grad);
+        float sy2 = sin((i + seg - 90) * deg2grad);
+        int x2    = sx2 * (rx - w) + x;
+        int y2    = sy2 * (ry - w) + y;
+        int x3    = sx2 * rx + x;
+        int y3    = sy2 * ry + y;
+
+        lean_bar_sprite.fillTriangle(x0, y0, x1, y1, x2, y2, colour);
+        lean_bar_sprite.fillTriangle(x1, y1, x2, y2, x3, y3, colour);
+
+        // Copy segment end to sgement start for next segment
+        x0 = x2;
+        y0 = y2;
+        x1 = x3;
+        y1 = y3;
+    }
+}
+
 void create_needle_sprite(){
     uint16_t couleur = 0x9185;
     needle_sprite.createSprite(20,80);
@@ -140,9 +174,14 @@ void draw_lean_angle_bar(float lean, int w, int h){
     lean_bar_sprite.fillRect(centre_x, 0, lean, h, color);
     lean_bar_sprite.fillRect(centre_x+lean, 0, max_lean-lean, h, BLACK);
   }
-
   lean_bar_sprite.drawFastVLine(centre_x, 0, h, TFT_NAVY);
   lean_bar_sprite.drawRect(0, 0, w, h, TFT_LIGHTGREY);
+
+  /*
+  lean_bar_sprite.createSprite(100, 100);
+  lean_bar_sprite.setPivot(50,50);
+  fillArc(50, 50, 0, lean, 40, 40, 4, TFT_WHITE);*/
+
 }
 
 void update_led(int angle){
@@ -199,12 +238,14 @@ void display_data_point_GUI(double_chain* head){
   direction_sprite.pushRotated(&tracker_sprite, head->data.direction, TFT_TRANSPARENT);
   //Lean angle bar
   tracker_sprite.setPivot(75, 10);
+  //tracker_sprite.setPivot(50, 50);
   draw_lean_angle_bar(head->data.roll, 131, 15);
   lean_bar_sprite.pushRotated(&tracker_sprite, 0, TFT_TRANSPARENT);
+  
   //display the biker
   tracker_sprite.setPivot(65, 70);
   bike_sprite.pushRotated(&tracker_sprite, head->data.roll, TFT_TRANSPARENT);
-
+  
   tracker_sprite.pushSprite(0,0,TFT_TRANSPARENT);
    
   if (preferences.getBool("show_led", false)) update_led((int)head->data.roll);

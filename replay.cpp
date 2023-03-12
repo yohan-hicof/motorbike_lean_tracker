@@ -215,11 +215,11 @@ void replay_track_GUI(double_chain* tail){
   double min_lat, max_lat; 
   double min_lng, max_lng; 
   double diff_lat, diff_lng, ratio;
-  uint32_t start_date, end_date;
-  uint32_t start_time, end_time;
+  uint32_t start_date, end_date, wait_time = 25;
+  uint32_t start_time, end_time, remaining_time;
   int shift_x = 5, shift_y = 20;
   
-  char starting[25], ending[25];
+  char remaining[25];
 
   if(current == NULL){
     M5.Lcd.printf("Cannot extract data, null pointer given\n Press any button to end.");
@@ -230,8 +230,8 @@ void replay_track_GUI(double_chain* tail){
      }    
   }
   //Set the starting values
-  end_date = current->data.date;
-  end_time = current->data.time;
+  start_date = current->data.date;
+  start_time = current->data.time;  
   min_lat = current->data.lat;
   max_lat = current->data.lat;
   min_lng = current->data.lng;
@@ -242,21 +242,15 @@ void replay_track_GUI(double_chain* tail){
     max_lat = max(max_lat, current->data.lat);
     min_lng = min(min_lng, current->data.lng);
     max_lng = max(max_lng, current->data.lng);    
-    start_date = current->data.date;
-    start_time = current->data.time;
+    end_date = current->data.date;
+    end_time = current->data.time;
     current = current->previous;  
   }
   //Now we get the min max for latitude and longitude, we can start displaying
   current = tail;
-
-  format_date_time(start_date, start_time, starting);
-  format_date_time(end_date, end_time, ending);
-
-  M5.Lcd.setTextSize(1);
-  M5.Lcd.fillScreen(BLACK);  
-  M5.Lcd.setCursor(0, 0); 
-  M5.lcd.printf("Sarting time: %s\n", starting);
-  M5.lcd.printf("Ending time: %s\n", ending);  
+ 
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.fillScreen(BLACK);    
 
   //Do the dot per dot display
   diff_lat = max_lat-min_lat; //y
@@ -280,15 +274,35 @@ void replay_track_GUI(double_chain* tail){
     uint8_t red = map(speed, 20, 260, 0, 31);
     uint16_t color = green*32 + red*2048;
 
-    //M5.Lcd.setCursor(0, 20); 
-    //M5.lcd.printf("Display @ %d, %d", x, y);
+    //Get the remaining time.
+    time_difference(current->data.time, end_time, &remaining_time);
+    format_time(remaining_time, remaining);
+
+    M5.Lcd.setCursor(5, 5); 
+    M5.lcd.printf("Remaining: %s\n", remaining);
+    M5.lcd.printf("Speed: %3.2f  Lean: %2.1f    \n", current->data.speed, current->data.roll);    
 
     M5.Lcd.drawPixel(x, y, color);
-    delay(10);
+
+    //Allow to slow down, speed up of pause the current replay
+    M5.update();
+    if (M5.BtnA.wasPressed()){wait_time = max(10, wait_time-5);}//Slow down
+    if (M5.BtnC.wasPressed()){wait_time = min(200, wait_time+5);}//Speed up
+    if (M5.BtnB.wasPressed()){
+      delay(100);      
+      while(1){
+        M5.update();
+        if (M5.BtnB.wasPressed()) break;
+      }
+    }
+
+    delay(wait_time);
     current = current->previous;
+
   }
 
   if(current == NULL){
+    M5.Lcd.setCursor(0, 205); 
     M5.Lcd.printf("End of replay\n Press any button to end.");
      while(1){
       M5.update();

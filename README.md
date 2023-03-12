@@ -18,9 +18,6 @@ Illustration of the interface
 ![Configuration menu](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/config_screen.png)
 
 
-
-
-
 #TODO
 
 -Improve the description of the readme and add images.
@@ -33,14 +30,17 @@ Illustration of the interface
 
 -Create a python script to allow data visualisation from the saved file.
 
--Find a way to estimate the laptime based on gps data.
+-Find a way to estimate the laptime based on gps data. (Need data to test that.)
 
 -Add the state of the battery during tracking and visualization. : https://community.m5stack.com/topic/2994/core2-how-to-know-the-current-battery-level/9
 
-- Add in the point capture the led if they are activated.
-
 - Add in the replay the leds if they are activated.
 
+- Add simple capture visualization: Just speed and lean.
+
+- Add a menu to select visualizationt type.
+
+- In replay track, add button to pause, speed up/ slow down the replay
 
 Known issues
 

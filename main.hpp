@@ -85,6 +85,7 @@ void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff);
 
 void update_led(int angle);
 
+void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour);
 void create_needle_sprite();
 void create_direction_sprite();
 
