@@ -44,6 +44,7 @@ double_chain* delete_after_n_links(double_chain* head, int n = 200, bool only_sa
 double_chain* delete_n_links_from_tails(double_chain* tail, int n, bool only_saved = true);
 
 //Configuration functions
+void tracker_menu();
 void config_menu();
 void set_brightness();
 void set_time();
@@ -76,7 +77,7 @@ void get_imu_preferences(Preferences* preferences);
 
 //Main function for the tracker
 void wait_for_gps();
-void main_tracker_loop();
+void main_tracker_loop(uint8_t display_type = 0);
 
 //Displaying the current state
 void format_date_time(uint32_t date, uint32_t time, char* string_time);
@@ -92,6 +93,7 @@ void create_direction_sprite();
 void draw_lean_angle_bar(float lean, int w, int h);
 void display_data_point_CLI(double_chain* head);
 void display_data_point_GUI(double_chain* head);
+void display_real_time_GUI(double_chain* head, uint32_t start_time);
 
 //Function linked to the sd card
 void draw_selection_arrows();

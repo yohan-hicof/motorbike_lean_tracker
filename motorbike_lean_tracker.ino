@@ -356,6 +356,39 @@ void config_menu(){
   
 }
 
+void tracker_menu(){
+
+  while (1){
+    M5.Lcd.drawJpg(tracker_menu_icon, 44204, 0,0,320,240);   
+    delay(50);
+    M5.update();  
+    Event& e = M5.Buttons.event;    
+    if (e & E_TOUCH) {
+      if (e.to.x < 150 && e.to.y < 110){
+        //First quadrant
+        delay(50);
+         main_tracker_loop(0);
+      }
+      if (e.to.x > 170 && e.to.y < 110){
+        //Second quadrant
+        delay(50);
+         main_tracker_loop(2);
+      }
+      if (e.to.x < 150 && e.to.y > 130){
+        //Third quadrant
+        delay(50);
+        return;
+      }
+      if (e.to.x > 170 && e.to.y > 130){
+        //Fourth quadrant
+        delay(50);        
+        return;      
+      }
+    }
+  }
+  
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
   
@@ -368,7 +401,8 @@ void loop() {
   if (e & E_TOUCH) {
     if (e.to.x < 150 && e.to.y < 110){
       //First quadrant
-      main_tracker_loop();
+      //main_tracker_loop();
+      tracker_menu();
     }
     if (e.to.x > 170 && e.to.y < 110){
       //Second quadrant

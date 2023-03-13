@@ -38,6 +38,8 @@ Illustration of the interface
 
 - Add simple capture visualization: Just speed and lean.
 
+- Add a visualization that create the track in real time (might be to slow, will have to save the last 3 minutes or something)
+
 - Add a menu to select visualizationt type.
 
 - In replay track, add button to pause, speed up/ slow down the replay

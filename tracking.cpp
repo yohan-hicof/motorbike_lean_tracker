@@ -30,7 +30,7 @@ void wait_for_gps(){
   }
 }
 
-void main_tracker_loop(){
+void main_tracker_loop(uint8_t display_type){
   //This is the main loop.
   //It init the variable, then regularly capture data point.
   //When necessary it will save to the sd card or delete old data point.
@@ -46,13 +46,16 @@ void main_tracker_loop(){
   uint32_t wait_time = 100;//the number of ms we wait between two points
   uint32_t number_of_links = 0;
   uint32_t last_GUI_update = millis();
+  uint32_t start_time;
   
   //Wait for the GPS to be running before starting.
   wait_for_gps();
   M5.Lcd.fillScreen(BLACK);
   //Get the first data point, then start the loop. This avoid a useless if all the time.  
   head = create_new_data_point();  
-  tail = head;    
+  tail = head;
+
+  start_time = head->data.time;  
   
   delay(100);
   last_save = millis();
@@ -68,8 +71,10 @@ void main_tracker_loop(){
     }
 
     if (millis()-last_GUI_update > 100){
-      //display_data_point_CLI(head);
-      display_data_point_GUI(head);
+      if (display_type == 0) display_data_point_GUI(head);
+      else if (display_type == 1) display_data_point_CLI(head);
+      else if (display_type == 2) display_real_time_GUI(head, start_time);
+      
       last_GUI_update = millis();
     }
 

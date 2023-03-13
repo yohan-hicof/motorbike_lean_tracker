@@ -215,9 +215,9 @@ void replay_track_GUI(double_chain* tail){
   double min_lat, max_lat; 
   double min_lng, max_lng; 
   double diff_lat, diff_lng, ratio;
-  uint32_t start_date, end_date, wait_time = 25;
+  uint32_t start_date, end_date;
   uint32_t start_time, end_time, remaining_time;
-  int shift_x = 5, shift_y = 20;
+  int shift_x = 5, shift_y = 20, wait_time = 25;
   
   char remaining[25];
 

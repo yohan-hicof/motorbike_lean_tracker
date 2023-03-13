@@ -148,7 +148,6 @@ void display_data_point_CLI(double_chain* head){
 
 }
 
-
 void draw_lean_angle_bar(float lean, int w, int h){
   //Draw a rectangle on the bottom left of the screen to indicate the current lean angle.
   //The color is also proportional to the lean angle  
@@ -272,4 +271,46 @@ void display_data_point_GUI(double_chain* head){
     index--;
     current = current->next;    
   }
+}
+
+void display_real_time_GUI(double_chain* head, uint32_t start_time){
+  /*
+  A simple GUI to show very little information:
+     Speed.
+     Lean angle.
+     Elapsed time since start.
+     Last lap (when implemented), not sure if it will be possible in real time though.
+  */
+  
+  if(head == NULL){ //Nothing to display
+    return;
+  }
+  uint32_t elapsed_time;
+  char elapsed[25];
+  time_difference(start_time, head->data.time, &elapsed_time);
+  format_time(elapsed_time, elapsed);
+
+  M5.Lcd.setTextSize(3);
+  //Display the speed
+  M5.Lcd.setCursor(15, 60);   
+  M5.Lcd.setTextColor(BLUE, BLACK);
+  M5.lcd.printf("%3.1fKm/h", head->data.speed);
+
+  //Display the lean angle
+  M5.Lcd.setCursor(180, 60);
+  if (head->data.roll <= -45 || head->data.roll >= 45)
+    M5.Lcd.setTextColor(RED, BLACK);
+  else if (head->data.roll <= -30 || head->data.roll >= 30)
+    M5.Lcd.setTextColor(ORANGE, BLACK);
+  else if (head->data.roll <= -15 || head->data.roll >= 15)
+    M5.Lcd.setTextColor(YELLOW, BLACK);
+  else    
+    M5.Lcd.setTextColor(GREEN, BLACK);
+  M5.lcd.printf("\t%2.1f ", head->data.roll);
+
+  //Display the elapsed time.
+  M5.Lcd.setTextColor(GREEN, BLACK);
+  M5.Lcd.setCursor(25, 160);
+  M5.lcd.printf("%s", elapsed);
+  
 }
