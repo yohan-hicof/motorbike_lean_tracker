@@ -12,7 +12,7 @@ double_chain* create_new_data_point(){
   new_link = (double_chain *) malloc(sizeof(double_chain));
   if (new_link == NULL) return NULL;  
       
-  return_pitch_roll(&(new_link->data.pitch), &(new_link->data.roll));  
+  return_pitch_roll(&(new_link->data.pitch), &(new_link->data.roll), &(new_link->data.acceleration));  
   //new_link->data.pitch = fabs(new_link->data.pitch);
   //new_link->data.roll = fabs(new_link->data.roll);
   new_link->data.speed = constrain(gps.speed.kmph(), 20, 260); //We do not want to display speed below 20kmph
@@ -41,6 +41,7 @@ double_chain* create_dummy_data_point(uint32_t index){
   
   new_link->data.pitch = 30.0;
   new_link->data.roll = 30.0;
+  new_link->data.acceleration = 0.25;
   new_link->data.speed = 100.0;
   new_link->data.direction = 90.0;
   new_link->data.lat = 8.15236;

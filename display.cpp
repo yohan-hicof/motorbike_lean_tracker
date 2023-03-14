@@ -5,6 +5,7 @@ TFT_eSprite menu_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite needle_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite direction_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite lean_bar_sprite = TFT_eSprite(&M5.Lcd);
+TFT_eSprite accel_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite bike_sprite = TFT_eSprite(&M5.Lcd);
 
 int course_x = 80, course_y = 65, course_r = 50;
@@ -149,7 +150,7 @@ void display_data_point_CLI(double_chain* head){
 }
 
 void draw_lean_angle_bar(float lean, int w, int h){
-  //Draw a rectangle on the bottom left of the screen to indicate the current lean angle.
+  //Draw a rectangle on the top left of the screen to indicate the current lean angle.
   //The color is also proportional to the lean angle  
 
   //Limit the lean angle to 0-65, only positive   
@@ -181,6 +182,31 @@ void draw_lean_angle_bar(float lean, int w, int h){
   lean_bar_sprite.setPivot(50,50);
   fillArc(50, 50, 0, lean, 40, 40, 4, TFT_WHITE);*/
 
+}
+
+void draw_accel_bar(float accel, int w, int h){
+  //Draw a rectangle on the top left of the screen to indicate the current acceleration.
+  //The color depends of acceleration or breaking.
+
+  //Limit the accel angle to -1+1, only positive   
+  int max_accel = 1.0, centre_y = h/2;
+  accel = constrain(accel, -max_accel, max_accel);
+  
+  uint8_t bar = h/2.0*fabs(accel);
+  uint16_t color = 2016; //Full green, we accelerate
+  if (accel > 0) color = 63488; //Full red, we brake
+    
+  accel_sprite.createSprite(w, h);
+  accel_sprite.setPivot(w/2,h/2);
+
+  if (accel < 0){//Accel ?
+    accel_sprite.fillRect(0, centre_y-bar, w, bar, color);    
+  }
+  else{
+    accel_sprite.fillRect(0, centre_y, w, bar, color);        
+  }
+  accel_sprite.drawFastVLine(0, centre_y, w, TFT_NAVY);
+  accel_sprite.drawRect(0, 0, w, h, TFT_LIGHTGREY);
 }
 
 void update_led(int angle){
@@ -236,10 +262,13 @@ void display_data_point_GUI(double_chain* head){
   tracker_sprite.setPivot(66, 173);
   direction_sprite.pushRotated(&tracker_sprite, head->data.direction, TFT_TRANSPARENT);
   //Lean angle bar
-  tracker_sprite.setPivot(75, 10);
-  //tracker_sprite.setPivot(50, 50);
+  tracker_sprite.setPivot(75, 10);  
   draw_lean_angle_bar(head->data.roll, 131, 15);
   lean_bar_sprite.pushRotated(&tracker_sprite, 0, TFT_TRANSPARENT);
+  //Acceleration bar
+  tracker_sprite.setPivot(10, 70);  
+  draw_accel_bar(head->data.acceleration, 5, 100);
+  lean_bar_sprite.pushRotated(&accel_sprite, 0, TFT_TRANSPARENT);  
   
   //display the biker
   tracker_sprite.setPivot(65, 70);

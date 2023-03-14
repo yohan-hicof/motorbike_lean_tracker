@@ -148,13 +148,13 @@ void drawSpot(float ax, float ay, float* old_x, float* old_y){
 
 void display_bubble(){
 
-  float roll = 0.0, pitch = 0.0;
+  float roll = 0.0, pitch = 0.0, acceleration = 0.0;
   float old_roll = 0.0, old_pitch = 0.0;
   M5.Lcd.fillScreen(BLACK);
   while (1){
     M5.update();
     if (M5.BtnB.wasPressed()) return;    
-    return_pitch_roll(&pitch, &roll);
+    return_pitch_roll(&pitch, &roll, &acceleration);
     drawSpot(roll, pitch, &old_roll, &old_pitch);  
 
     uint8_t green, red;

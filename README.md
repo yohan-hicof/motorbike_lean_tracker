@@ -17,32 +17,35 @@ Illustration of the interface
 ![Replay menu](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/replay_screen.png)
 ![Configuration menu](https://github.com/yohan-hicof/motorbike_lean_tracker/blob/main/screen/config_screen.png)
 
+Source of the modified 3D printed support: https://www.thingiverse.com/thing:2834201
+https://www.thingiverse.com/thing:5357667
+https://www.thingiverse.com/thing:740221
 
 #TODO
 
--Improve the description of the readme and add images.
+- Improve the description of the readme and add images. (done, will need to be updated)
 
--Allow the recorded data to be replayed. (in progress): in the track replay, show more info, like current speed, current lean
+- Allow the recorded data to be replayed. (in progress): in the track replay, show more info, like current speed, current lean
 
--Create another interface to see the track according to the gps data.
+- Create another interface to see the track according to the gps data.
 
--Change the different background from drawn to images. (in progress)
+- Change the different background from drawn to images. (in progress)
 
--Create a python script to allow data visualisation from the saved file.
+- Create a python script to allow data visualisation from the saved file.
 
--Find a way to estimate the laptime based on gps data. (Need data to test that.)
+- Find a way to estimate the laptime based on gps data. (Need data to test that.)
 
--Add the state of the battery during tracking and visualization. : https://community.m5stack.com/topic/2994/core2-how-to-know-the-current-battery-level/9
+- Add the state of the battery during tracking and visualization. : https://community.m5stack.com/topic/2994/core2-how-to-know-the-current-battery-level/9
 
 - Add in the replay the leds if they are activated.
 
-- Add simple capture visualization: Just speed and lean.
+- Add simple capture visualization: Just speed and lean. (in progress)
 
 - Add a visualization that create the track in real time (might be to slow, will have to save the last 3 minutes or something)
 
 - Add a menu to select visualizationt type.
 
-- In replay track, add button to pause, speed up/ slow down the replay
+- Add the acceleration/brake. (in progress)
 
 Known issues
 

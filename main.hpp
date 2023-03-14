@@ -13,8 +13,9 @@ Learn to load/save sprites.
 //All the part related to the data points
 //So many points
 typedef struct data_point {
-    float pitch; // 
-    float roll; // 
+    float pitch; // The whillie/stoppy of the bike
+    float roll; // The lean of the motorbike
+    float acceleration; // Y acceleration
     double speed; //
     double direction; // Direction of the bike from the GPS
     double lat; // Current latitude
@@ -67,9 +68,8 @@ void calibrationAccel(Preferences* preferences);
 void calibrationAhrs(Preferences* preferences);
 
 void compute_pitch_roll_bg(void* pvParameters);
-void return_pitch_roll(float *pitch, float *roll);
+void return_pitch_roll(float *pitch, float *roll, float *accel_y);
 
-void return_pitch_roll(float *pitch, float *roll);
 void compute_pitch_roll(float *pitch, float *roll);
 void compute_lean(float *lean, float *accel, float *offset_accel);
 

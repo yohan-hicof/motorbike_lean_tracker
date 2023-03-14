@@ -74,7 +74,7 @@ void compute_pitch_roll_bg(void* pvParameters) {
   }
 }
 
-void return_pitch_roll(float *pitch, float *roll){
+void return_pitch_roll(float *pitch, float *roll, float *accel_y){
   /*
   The only goal of this function is to access from outside to the computed pitch and roll variable.
   This is to avoid declaring extern variable everywhere.
