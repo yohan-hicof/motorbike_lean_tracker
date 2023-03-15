@@ -80,7 +80,8 @@ void return_pitch_roll(float *pitch, float *roll, float *accel_y){
   This is to avoid declaring extern variable everywhere.
   */
   *pitch = phi;
-  *roll = theta;  
+  *roll = theta;
+  *accel_y = accel[1] - offset_accel[1];
 }
 
 void compute_pitch_roll(float *pitch, float *roll){

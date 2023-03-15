@@ -188,24 +188,33 @@ void draw_accel_bar(float accel, int w, int h){
   //Draw a rectangle on the top left of the screen to indicate the current acceleration.
   //The color depends of acceleration or breaking.
 
+  //Serial.print("accel before: ");
+  //Serial.println(accel);
+
   //Limit the accel angle to -1+1, only positive   
-  int max_accel = 1.0, centre_y = h/2;
+  int max_accel = 1.5, centre_y = h/2;
   accel = constrain(accel, -max_accel, max_accel);
-  
-  uint8_t bar = h/2.0*fabs(accel);
+
+  //Serial.print("accel after: ");
+  //Serial.println(accel);
+  //We want a value between 0 and 
+  uint8_t bar = fabs(accel) * h/(2.0*max_accel);
   uint16_t color = 2016; //Full green, we accelerate
   if (accel > 0) color = 63488; //Full red, we brake
-    
+  
   accel_sprite.createSprite(w, h);
   accel_sprite.setPivot(w/2,h/2);
 
-  if (accel < 0){//Accel ?
+  accel_sprite.fillRect(0, 0, w, h, TFT_BLACK);
+
+  //If close to zero show nothing
+  if (accel < -0.05){//Accel ?
     accel_sprite.fillRect(0, centre_y-bar, w, bar, color);    
   }
-  else{
+  else if (accel > 0.05){
     accel_sprite.fillRect(0, centre_y, w, bar, color);        
   }
-  accel_sprite.drawFastVLine(0, centre_y, w, TFT_NAVY);
+  accel_sprite.drawFastHLine(0, centre_y, w, TFT_NAVY);
   accel_sprite.drawRect(0, 0, w, h, TFT_LIGHTGREY);
 }
 
@@ -250,7 +259,7 @@ void display_data_point_GUI(double_chain* head){
   }
   bike_sprite.createSprite(35,70);
   bike_sprite.drawJpg(CBR600, 4188, 0,0,35,70);
-  bike_sprite.setPivot(17, 35);
+  bike_sprite.setPivot(17, 69);
 
   tracker_sprite.createSprite(320, 240);
   tracker_sprite.drawJpg(tracker_bg, 14442, 0,0,320,240);
@@ -266,12 +275,12 @@ void display_data_point_GUI(double_chain* head){
   draw_lean_angle_bar(head->data.roll, 131, 15);
   lean_bar_sprite.pushRotated(&tracker_sprite, 0, TFT_TRANSPARENT);
   //Acceleration bar
-  tracker_sprite.setPivot(10, 70);  
-  draw_accel_bar(head->data.acceleration, 5, 100);
-  lean_bar_sprite.pushRotated(&accel_sprite, 0, TFT_TRANSPARENT);  
+  tracker_sprite.setPivot(10, 75);  
+  draw_accel_bar(head->data.acceleration, 15, 100);
+  accel_sprite.pushRotated(&tracker_sprite, 0, TFT_TRANSPARENT);  
   
   //display the biker
-  tracker_sprite.setPivot(65, 70);
+  tracker_sprite.setPivot(65, 105);
   bike_sprite.pushRotated(&tracker_sprite, head->data.roll, TFT_TRANSPARENT);
   
   tracker_sprite.pushSprite(0,0,TFT_TRANSPARENT);
@@ -307,6 +316,7 @@ void display_real_time_GUI(double_chain* head, uint32_t start_time){
   A simple GUI to show very little information:
      Speed.
      Lean angle.
+     Acceleration/brake
      Elapsed time since start.
      Last lap (when implemented), not sure if it will be possible in real time though.
   */
@@ -321,12 +331,20 @@ void display_real_time_GUI(double_chain* head, uint32_t start_time){
 
   M5.Lcd.setTextSize(3);
   //Display the speed
-  M5.Lcd.setCursor(15, 60);   
+  M5.Lcd.setCursor(130, 40);   
   M5.Lcd.setTextColor(BLUE, BLACK);
   M5.lcd.printf("%3.1fKm/h", head->data.speed);
 
+  //Display the acceleration/braking
+  M5.Lcd.setCursor(80, 110);
+  if (head->data.acceleration < 0)
+    M5.Lcd.setTextColor(RED, BLACK);
+  else
+    M5.Lcd.setTextColor(GREEN, BLACK);
+  M5.lcd.printf("\t%1.3f g", head->data.acceleration);
+
   //Display the lean angle
-  M5.Lcd.setCursor(180, 60);
+  M5.Lcd.setCursor(180, 110);
   if (head->data.roll <= -45 || head->data.roll >= 45)
     M5.Lcd.setTextColor(RED, BLACK);
   else if (head->data.roll <= -30 || head->data.roll >= 30)
@@ -339,7 +357,7 @@ void display_real_time_GUI(double_chain* head, uint32_t start_time){
 
   //Display the elapsed time.
   M5.Lcd.setTextColor(GREEN, BLACK);
-  M5.Lcd.setCursor(25, 160);
+  M5.Lcd.setCursor(25, 180);
   M5.lcd.printf("%s", elapsed);
   
 }

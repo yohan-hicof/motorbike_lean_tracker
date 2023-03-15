@@ -45,8 +45,5 @@ https://www.thingiverse.com/thing:740221
 
 - Add a menu to select visualizationt type.
 
-- Add the acceleration/brake. (in progress)
-
 Known issues
 
-- The biker rotate on the center of the bike, should rotate around the tyre.

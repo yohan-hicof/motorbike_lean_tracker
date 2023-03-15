@@ -101,6 +101,7 @@ void setup() {
   //Start the background process of getting feed from the gps
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
   
+  Serial.begin(9600);
   
 }
 
@@ -155,7 +156,7 @@ void display_bubble(){
     M5.update();
     if (M5.BtnB.wasPressed()) return;    
     return_pitch_roll(&pitch, &roll, &acceleration);
-    drawSpot(roll, pitch, &old_roll, &old_pitch);  
+    drawSpot(roll, pitch, &old_roll, &old_pitch);
 
     uint8_t green, red;
     int Croll;
@@ -391,9 +392,7 @@ void tracker_menu(){
 
 void loop() {
   // put your main code here, to run repeatedly:
-  
-  //menu_sprite.pushSprite(0, 0);
-  //main_menu 54750
+
   M5.Lcd.drawJpg(main_menu, 26618, 0, 0, 320, 240);  
   delay(50);
   M5.update();  
