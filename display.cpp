@@ -7,6 +7,8 @@ TFT_eSprite direction_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite lean_bar_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite accel_sprite = TFT_eSprite(&M5.Lcd);
 TFT_eSprite bike_sprite = TFT_eSprite(&M5.Lcd);
+TFT_eSprite battery_sprite = TFT_eSprite(&M5.Lcd);
+
 
 int course_x = 80, course_y = 65, course_r = 50;
 int counter_x = 235, counter_y = 65, counter_r = 50;
@@ -16,6 +18,14 @@ extern CRGB leds[10];
 extern Preferences preferences;
 extern const unsigned char tracker_bg[14442];
 extern const unsigned char CBR600[4188];
+extern const unsigned char battery_0[3093];
+extern const unsigned char battery_20[3004];
+extern const unsigned char battery_40[3405];
+extern const unsigned char battery_60[3688];
+extern const unsigned char battery_80[3929];
+extern const unsigned char battery_100[3983];
+extern const unsigned char battery_charge[2861];
+
 
 void format_date_time(uint32_t date, uint32_t time, char* string_time){
   //Convert two int containing date and time into a single char*
@@ -110,6 +120,38 @@ void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w
         x1 = x3;
         y1 = y3;
     }
+}
+
+uint8_t volt_to_percent(float volt){
+  //Convert the voltage of the battery into an estimation of the percentage used.
+  //We take the following assumption:
+  // > 4.1 : Charging
+  //< 3.25 Empty
+  // Between 4.05 and 3.25 100->0
+
+  if (volt > 4.1) return 255;
+  if (volt < 3.25) return 0;
+  //Get the percentage
+  volt -= 3.25;
+  volt *= 100/0.8;
+  return (uint8_t)volt;
+
+}
+
+void create_battery_sprite(int percentage){
+    uint16_t vert = 0x07E0;
+    uint16_t jaune = 0xFFE0;
+    uint16_t rouge = 0x9185;
+    battery_sprite.createSprite(50,24);    
+
+    if (M5.Axp.isCharging()) battery_sprite.drawJpg(battery_charge, 2861, 0,0,50,24);
+    else if (percentage < 10) battery_sprite.drawJpg(battery_0, 3093, 0,0,50,24);
+    else if (percentage < 30) battery_sprite.drawJpg(battery_20, 3004, 0,0,50,24);
+    else if (percentage < 50) battery_sprite.drawJpg(battery_40, 3405, 0,0,50,24);
+    else if (percentage < 70) battery_sprite.drawJpg(battery_60, 3688, 0,0,50,24);
+    else if (percentage < 85) battery_sprite.drawJpg(battery_80, 3929, 0,0,50,24);
+    else battery_sprite.drawJpg(battery_100, 3983, 0,0,50,24);    
+    battery_sprite.setPivot(20,12);
 }
 
 void create_needle_sprite(){
@@ -359,5 +401,8 @@ void display_real_time_GUI(double_chain* head, uint32_t start_time){
   M5.Lcd.setTextColor(GREEN, BLACK);
   M5.Lcd.setCursor(25, 180);
   M5.lcd.printf("%s", elapsed);
+
+  //Show the LED
+  if (preferences.getBool("show_led", false)) update_led((int)head->data.roll);
   
 }

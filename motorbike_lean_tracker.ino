@@ -12,6 +12,8 @@ bool sd_card_found = false;
 
 Preferences preferences;
 
+extern TFT_eSprite battery_sprite;
+
 CRGB leds[10];
 
 void feed_gps_bg(void* pvParameters){
@@ -390,10 +392,15 @@ void tracker_menu(){
   
 }
 
+
 void loop() {
   // put your main code here, to run repeatedly:
+    
+  create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));
 
   M5.Lcd.drawJpg(main_menu, 26618, 0, 0, 320, 240);  
+  battery_sprite.pushSprite(270,0,TFT_TRANSPARENT);
+
   delay(50);
   M5.update();  
   Event& e = M5.Buttons.event;    

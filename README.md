@@ -27,23 +27,18 @@ https://www.thingiverse.com/thing:740221
 
 - Allow the recorded data to be replayed. (in progress): in the track replay, show more info, like current speed, current lean
 
-- Create another interface to see the track according to the gps data.
-
-- Change the different background from drawn to images. (in progress)
-
 - Create a python script to allow data visualisation from the saved file.
 
 - Find a way to estimate the laptime based on gps data. (Need data to test that.)
 
 - Add the state of the battery during tracking and visualization. : https://community.m5stack.com/topic/2994/core2-how-to-know-the-current-battery-level/9
+In progress, integrate it into other sprite.
 
-- Add in the replay the leds if they are activated.
+- Create a sprite for the main menu (to integrate the battery)
 
 - Add simple capture visualization: Just speed and lean. (in progress)
 
 - Add a visualization that create the track in real time (might be to slow, will have to save the last 3 minutes or something)
-
-- Add a menu to select visualizationt type.
 
 Known issues
 

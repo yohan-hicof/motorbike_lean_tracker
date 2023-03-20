@@ -87,8 +87,10 @@ void time_difference(uint32_t time_beg, uint32_t time_end, uint32_t* time_diff);
 void update_led(int angle);
 
 void fillArc(int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour);
+uint8_t volt_to_percent(float volt);
 void create_needle_sprite();
 void create_direction_sprite();
+void create_battery_sprite(int percentage);
 
 void draw_lean_angle_bar(float lean, int w, int h);
 void display_data_point_CLI(double_chain* head);

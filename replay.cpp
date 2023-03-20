@@ -1,6 +1,7 @@
 #include "main.hpp"
 
 extern const unsigned char replay_menu[17530];
+extern Preferences preferences;
 
 void main_replay(){
   //Main function handling the replay.
@@ -283,6 +284,8 @@ void replay_track_GUI(double_chain* tail){
     M5.lcd.printf("Speed: %3.2f  Lean: %2.1f    \n", current->data.speed, current->data.roll);    
 
     M5.Lcd.drawPixel(x, y, color);
+
+    if (preferences.getBool("show_led", false)) update_led((int)current->data.roll);
 
     //Allow to slow down, speed up of pause the current replay
     M5.update();
