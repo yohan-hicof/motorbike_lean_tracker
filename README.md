@@ -8,6 +8,8 @@ It regularly saves on the SD card the data recorded.
 
 The computation of the lean angle is based on the accelerometer and the gyroscope. This allows to have a measure that should be independant from acceleration and only measure the lean angle. The method is based on the exelent series of videos from Paul McWhorter: https://toptechboy.com/arduino-based-9-axis-inertial-measurement-unit-imu-based-on-bno055-sensor/ and modified to fit my need and work with the IMU of the stack.
 
+Source for the battery: https://community.m5stack.com/topic/2994/core2-how-to-know-the-current-battery-level/9
+
 Tool used for the pixelization of the CBR: https://giventofly.github.io/pixelit/#tryit
 
 Illustration of the interface
@@ -31,14 +33,12 @@ https://www.thingiverse.com/thing:740221
 
 - Find a way to estimate the laptime based on gps data. (Need data to test that.)
 
-- Add the state of the battery during tracking and visualization. : https://community.m5stack.com/topic/2994/core2-how-to-know-the-current-battery-level/9
-In progress, integrate it into other sprite.
-
-- Create a sprite for the main menu (to integrate the battery)
-
 - Add simple capture visualization: Just speed and lean. (in progress)
 
 - Add a visualization that create the track in real time (might be to slow, will have to save the last 3 minutes or something)
+
+- Add the support for bluetooth: i.e. send the files to the cellphone to then display the replay there.
+
 
 Known issues
 

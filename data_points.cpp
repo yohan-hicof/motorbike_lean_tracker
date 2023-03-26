@@ -15,7 +15,7 @@ double_chain* create_new_data_point(){
   return_pitch_roll(&(new_link->data.pitch), &(new_link->data.roll), &(new_link->data.acceleration));  
   //new_link->data.pitch = fabs(new_link->data.pitch);
   //new_link->data.roll = fabs(new_link->data.roll);
-  new_link->data.speed = constrain(gps.speed.kmph(), 20, 260); //We do not want to display speed below 20kmph
+  new_link->data.speed = constrain(gps.speed.kmph(), 0, 260); //We do not want to display speed below 20kmph
   new_link->data.direction = gps.course.deg();
   new_link->data.lat = gps.location.lat();
   new_link->data.lng = gps.location.lng();

@@ -13,6 +13,7 @@ bool sd_card_found = false;
 Preferences preferences;
 
 extern TFT_eSprite battery_sprite;
+TFT_eSprite main_menu_sprite = TFT_eSprite(&M5.Lcd);
 
 CRGB leds[10];
 
@@ -67,6 +68,49 @@ void test_write_read(){
 }
 
 
+void test_write_for_python(){
+  create_save_file_name();
+
+  double_chain* head = NULL; //First data point.
+  double_chain* tail = NULL; //Last data point.
+
+  head = create_dummy_data_point(1);
+  head->data.pitch = 0.0;
+  head->data.roll = 0.0;
+  head->data.acceleration = 0.0;
+  head->data.speed = 0.0;
+  head->data.direction = 0.0;
+  head->data.lat = 0.0;
+  head->data.lng = 0.0;
+  head->data.date = 0;
+  head->data.time = 0;
+
+  tail = head;
+  double_chain* temp;
+  for (int i = 2; i < 1000; i++){
+    temp = create_dummy_data_point(i);
+
+    temp->data.pitch = 1.0*i + i/1000.0;
+    temp->data.roll = 1.0*i + i/100.0;
+    temp->data.acceleration = 1.0*i + i/10.0;
+    temp->data.speed = 2.0*i + i/1000.0;
+    temp->data.direction =  2.0*i + i/100.0;
+    temp->data.lat =  2.0*i + i/10.0;
+    temp->data.lng = 3.0*i + i/10.0;
+    temp->data.date = 1000*i;
+    temp->data.time = 100*i;
+
+    tail->next = temp;
+    temp->previous = tail;
+    tail = temp;
+  }
+  
+  M5.Lcd.printf("Writing to file ...");
+  write_data_to_file(tail, 1000);
+  M5.Lcd.printf("Done\n Cleaning the chain ...");
+  tail = delete_n_links_from_tails(tail, 1000);  
+}
+
 
 void setup() {
   
@@ -104,6 +148,9 @@ void setup() {
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
   
   Serial.begin(9600);
+
+  //test_write_for_python();
+  setupBT();
   
 }
 
@@ -395,11 +442,16 @@ void tracker_menu(){
 
 void loop() {
   // put your main code here, to run repeatedly:
-    
-  create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));
 
-  M5.Lcd.drawJpg(main_menu, 26618, 0, 0, 320, 240);  
-  battery_sprite.pushSprite(270,0,TFT_TRANSPARENT);
+  //while(1) receive_command();
+    
+  create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
+  main_menu_sprite.createSprite(320,240);
+  main_menu_sprite.drawJpg(main_menu, 26618, 0,0,320,240);  
+  main_menu_sprite.setPivot(25, 12);
+  battery_sprite.pushRotated(&main_menu_sprite, 0, TFT_TRANSPARENT);
+
+  main_menu_sprite.pushSprite(0,0,TFT_TRANSPARENT);
 
   delay(50);
   M5.update();  
