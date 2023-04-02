@@ -13,17 +13,25 @@ void receive_command(){
 
   String inputCommand = "";
   M5.lcd.setCursor(0,50);
+  M5.Lcd.println("Waiting for a command");
   while (SerialBT.available()) {
     delay(10);  //small delay to allow input buffer to fill
     char c = SerialBT.read();  //gets one byte from serial buffer
     if (c == '\n') break; 
     inputCommand += c; 
-    M5.Lcd.println(inputCommand);
+    //M5.Lcd.println(inputCommand);
   }
   M5.lcd.setCursor(10,10);
   M5.Lcd.println(inputCommand);
   //A bug in the windows soft, easier that way
-  if (inputCommand == "sendfiles" || inputCommand == "sendfilessendfiles") send_list_files();
+  if (inputCommand == "sendfiles") send_list_files();
+  if (inputCommand.substring(0,2) == "rf") {
+    String fn = inputCommand.substring(3);
+    char filename[fn.length()+1];
+    fn.toCharArray(filename, fn.length());
+    M5.Lcd.println(filename);
+    send_requested_file(filename);
+  }
 
 }
 
@@ -32,9 +40,11 @@ void send_list_files(){
   int nb_files;
   char** list_files = list_dir_root(SD, list_files, &nb_files);  
 
+  SerialBT.printf("sending files\n");
   for (int i = 0; i < nb_files; i++){
      SerialBT.printf("%s\n", list_files[i]);
   }
+  SerialBT.printf("EOF\n");
   //SerialBT.print("Sending file\n");
   //send_requested_file(list_files[0]);
   //SerialBT.print("\nFile send\n");

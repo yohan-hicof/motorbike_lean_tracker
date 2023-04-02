@@ -443,7 +443,7 @@ void tracker_menu(){
 void loop() {
   // put your main code here, to run repeatedly:
 
-  //while(1) receive_command();
+  while(1) receive_command();
     
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);
