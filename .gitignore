@@ -1,3 +1,4 @@
 *.svd
 *.json
 *.cfg
+example_data/old_format/

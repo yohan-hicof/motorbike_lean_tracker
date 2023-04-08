@@ -30,7 +30,9 @@ int write_data_to_file(double_chain* tail, int nb_links){
   return nb_links;
 }
 
-double_chain* read_data_to_file(char* file_name){
+
+
+double_chain* read_data_from_file(char* file_name){
   /*
   Read the given file data to recreate the linked list containing all the data.
   Return the pointer to the new head

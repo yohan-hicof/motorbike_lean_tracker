@@ -21,14 +21,15 @@ void receive_command(){
     inputCommand += c; 
     //M5.Lcd.println(inputCommand);
   }
-  M5.lcd.setCursor(10,10);
+  M5.lcd.setCursor(0,10);
   M5.Lcd.println(inputCommand);
   //A bug in the windows soft, easier that way
   if (inputCommand == "sendfiles") send_list_files();
   if (inputCommand.substring(0,2) == "rf") {
     String fn = inputCommand.substring(3);
     char filename[fn.length()+1];
-    fn.toCharArray(filename, fn.length());
+    fn.toCharArray(filename, fn.length()+1);
+    M5.Lcd.println(fn);
     M5.Lcd.println(filename);
     send_requested_file(filename);
   }

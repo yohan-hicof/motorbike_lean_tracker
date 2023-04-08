@@ -27,91 +27,6 @@ void feed_gps_bg(void* pvParameters){
   }
 }
 
-void test_write_read(){
-  create_save_file_name();
-
-  double_chain* head = NULL; //First data point.
-  double_chain* tail = NULL; //Last data point.
-
-  head = create_dummy_data_point(1);
-  tail = head;
-  double_chain* temp;
-  for (int i = 2; i < 10; i++){
-    temp = create_dummy_data_point(i);
-    tail->next = temp;
-    temp->previous = tail;
-    tail = temp;
-  }
-  temp = head;
-  while(temp != NULL){
-    M5.Lcd.printf("Index: %d\n", temp->data.date);
-    temp = temp->next;
-  }
-  M5.Lcd.printf("Writing to file ...");
-  write_data_to_file(tail, 10);
-  M5.Lcd.printf("Done\n Cleaning the chain ...");
-  tail = delete_n_links_from_tails(tail, 10);
-  M5.Lcd.printf("Done\n Reading the file ...");
-  head = NULL;
-  head = read_data_to_file(save_file_name);
-  M5.Lcd.printf("Done\n Finding last link ...");
-  tail = find_last_link(head);
-  M5.Lcd.printf("Done\n");
-  
-  M5.Lcd.printf("Reread the file\n");
-  temp = head;
-  while(temp != NULL){
-    M5.Lcd.printf("Index: %d\n", temp->data.date);
-    temp = temp->next;
-  }
-  
-}
-
-
-void test_write_for_python(){
-  create_save_file_name();
-
-  double_chain* head = NULL; //First data point.
-  double_chain* tail = NULL; //Last data point.
-
-  head = create_dummy_data_point(1);
-  head->data.pitch = 0.0;
-  head->data.roll = 0.0;
-  head->data.acceleration = 0.0;
-  head->data.speed = 0.0;
-  head->data.direction = 0.0;
-  head->data.lat = 0.0;
-  head->data.lng = 0.0;
-  head->data.date = 0;
-  head->data.time = 0;
-
-  tail = head;
-  double_chain* temp;
-  for (int i = 2; i < 1000; i++){
-    temp = create_dummy_data_point(i);
-
-    temp->data.pitch = 1.0*i + i/1000.0;
-    temp->data.roll = 1.0*i + i/100.0;
-    temp->data.acceleration = 1.0*i + i/10.0;
-    temp->data.speed = 2.0*i + i/1000.0;
-    temp->data.direction =  2.0*i + i/100.0;
-    temp->data.lat =  2.0*i + i/10.0;
-    temp->data.lng = 3.0*i + i/10.0;
-    temp->data.date = 1000*i;
-    temp->data.time = 100*i;
-
-    tail->next = temp;
-    temp->previous = tail;
-    tail = temp;
-  }
-  
-  M5.Lcd.printf("Writing to file ...");
-  write_data_to_file(tail, 1000);
-  M5.Lcd.printf("Done\n Cleaning the chain ...");
-  tail = delete_n_links_from_tails(tail, 1000);  
-}
-
-
 void setup() {
   
   M5.begin();
@@ -148,36 +63,9 @@ void setup() {
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
   
   Serial.begin(9600);
-
-  //test_write_for_python();
+  
   setupBT();
   
-}
-
-void test_display(){
-
-  //TODO do an infinite while in which we create more data points.
-  //The next data point has the value of the previous +- a random value. To keep some consistency
-  
-  int cpt = 0;
-  double_chain *head = create_dummy_data_point(cpt++), *next;
-
-  head->data.speed = random(50, 200);
-  head->data.direction = random(0, 360);
-  head->data.roll = random(0, 60);
-
-  while(1){
-    display_data_point_GUI(head);
-    next = create_dummy_data_point(cpt++);
-    next->next = head;
-    head->previous = next;
-    head = next;
-
-    head->data.speed = 0.8*head->next->data.speed + 0.2*random(50, 200);;
-    head->data.direction = 0.8*head->next->data.direction + 0.2*random(0, 360);
-    head->data.roll = 0.8*head->next->data.roll + 0.2*random(0, 60);
-    
-  }
 }
 
 void drawSpot(float ax, float ay, float* old_x, float* old_y){
@@ -354,7 +242,6 @@ void set_brightness(){
       }
     }
 
-
     if (M5.BtnA.wasPressed()){
       curr_brightness = max(curr_brightness-100, 2500);
       M5.Axp.SetLcdVoltage(curr_brightness);
@@ -439,11 +326,13 @@ void tracker_menu(){
   
 }
 
-
 void loop() {
   // put your main code here, to run repeatedly:
 
-  while(1) receive_command();
+  //test_read_file();
+  //test_rewrite_files();
+  //test_write_for_python();
+  //while(1) receive_command();
     
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);

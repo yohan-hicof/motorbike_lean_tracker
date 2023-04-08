@@ -25,7 +25,7 @@ void main_replay(){
   }
 
   //Read the selected file.
-  double_chain* head = read_data_to_file(replay_file_name);  
+  double_chain* head = read_data_from_file(replay_file_name);  
   double_chain* tail = find_last_link(head);
   
   while (true){
@@ -48,7 +48,7 @@ void main_replay(){
         //Select a file
         is_valid = select_file(SD, replay_file_name);
         if (!is_valid) return;
-        double_chain* head = read_data_to_file(replay_file_name);  
+        double_chain* head = read_data_from_file(replay_file_name);  
         double_chain* tail = find_last_link(head);
         continue;
       }
@@ -77,7 +77,7 @@ void extract_abstract_data(double_chain* head){
   double_chain* current = head;
   float max_pitch = 0;
   float max_roll = 0;
-  double max_speed = 0, average_speed = 0;  
+  float max_speed = 0, average_speed = 0;  
   double min_lat, max_lat; 
   double min_lng, max_lng; 
   uint32_t start_date, end_date, start_time, end_time, diff_time;

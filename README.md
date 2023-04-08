@@ -39,6 +39,11 @@ https://www.thingiverse.com/thing:740221
 
 - Add the support for bluetooth: i.e. send the files to the cellphone to then display the replay there.
 
+- Change the menu to allow the transfer of data to the cellphone.
+
+- Start the bluetooth only when we want to transfer to save energy.
+
+- Check the performance, the first test shows only 5 points per seconds. I would like to reach 10.
 
 Known issues
 
