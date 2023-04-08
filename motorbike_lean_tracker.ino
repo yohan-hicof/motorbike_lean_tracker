@@ -62,10 +62,7 @@ void setup() {
   //Start the background process of getting feed from the gps
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
   
-  Serial.begin(9600);
-  
-  setupBT();
-  
+  //Serial.begin(9600);  
 }
 
 void drawSpot(float ax, float ay, float* old_x, float* old_y){
@@ -261,7 +258,7 @@ void set_brightness(){
 
 void config_menu(){    
   while (1){
-    M5.Lcd.drawJpg(icon_config, 20861, 0,0,320,240);    
+    M5.Lcd.drawJpg(icon_config, 43446, 0,0,320,240);    
     delay(50);
     M5.update();  
     Event& e = M5.Buttons.event;    
@@ -283,8 +280,16 @@ void config_menu(){
         delay(50);
         set_time();        
       }
-      if (e.to.x > 170 && e.to.y > 130){
-        //Fourth quadrant
+      if (e.to.x > 160 && e.to.x < 235 && e.to.y > 130){
+        //Fourth quadrant right
+        delay(50);        
+        setupBT();
+        delay(200);
+        receive_command_GUI();
+        closeBT();        
+      }      
+      if (e.to.x > 245 && e.to.y > 130){
+        //Fourth quadrant right
         delay(50);        
         return;      
       }
@@ -327,12 +332,8 @@ void tracker_menu(){
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
-  //test_read_file();
-  //test_rewrite_files();
-  //test_write_for_python();
-  //while(1) receive_command();
+  
+  //while(1) receive_command_CLI();
     
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);
@@ -347,8 +348,7 @@ void loop() {
   Event& e = M5.Buttons.event;    
   if (e & E_TOUCH) {
     if (e.to.x < 150 && e.to.y < 110){
-      //First quadrant
-      //main_tracker_loop();
+      //First quadrant      
       tracker_menu();
     }
     if (e.to.x > 170 && e.to.y < 110){
@@ -365,8 +365,7 @@ void loop() {
       //Fourth quadrant
       delay(50);
       config_menu();
-    }
-      
+    }      
   }
   delay(50);
 

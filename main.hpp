@@ -13,17 +13,6 @@ Learn to load/save sprites.
 
 //All the part related to the data points
 //So many points
-/*typedef struct data_point {
-    float pitch; // The whillie/stoppy of the bike
-    float roll; // The lean of the motorbike
-    float acceleration; // Y acceleration
-    double speed; //
-    double direction; // Direction of the bike from the GPS
-    double lat; // Current latitude
-    double lng; // Current longitude
-    uint32_t date; // Current date
-    uint32_t time; // Current time    
-} data_point_t;*/
 
 typedef struct __attribute__ ((packed)) data_point {
     float pitch; // The whillie/stoppy of the bike
@@ -62,14 +51,6 @@ void tracker_menu();
 void config_menu();
 void set_brightness();
 void set_time();
-
-//Function to write the data to SD, and to recreate a chain from a file
-int write_data_to_file(double_chain* tail, int nb_links);
-double_chain* read_data_from_file(char* file_name);
-void check_sd_card();
-void create_save_file_name();
-bool M5Screen2bmp(const char * path);
-
 
 //Functions linked to the IMU
 void GetGyroData(uint16_t times, float* gyro);
@@ -116,10 +97,17 @@ int compare_files_name(const char *name1, const char *name2);
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels);
 char** list_dir_root(fs::FS &fs, char** list_files, int* nb_files);
 bool select_file(fs::FS &fs, char* selected_path);
+int write_data_to_file(double_chain* tail, int nb_links);
+double_chain* read_data_from_file(char* file_name);
+void check_sd_card();
+void create_save_file_name();
+bool M5Screen2bmp(const char * path);
 
 //Function linked to the BT functionalities
 void setupBT();
-void receive_command();
+void closeBT();
+void receive_command_CLI();
+void receive_command_GUI();
 void send_list_files();
 void send_requested_file(char* name);
 

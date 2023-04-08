@@ -43,6 +43,8 @@ https://www.thingiverse.com/thing:740221
 
 - Start the bluetooth only when we want to transfer to save energy.
 
+- Modify the bluetooth function to get a nicer view
+
 - Check the performance, the first test shows only 5 points per seconds. I would like to reach 10.
 
 Known issues

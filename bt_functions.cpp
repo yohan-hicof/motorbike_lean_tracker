@@ -3,13 +3,23 @@
 //Contains the functions linked to the Bluetooth 
 
 BluetoothSerial SerialBT;
+
+extern const unsigned char bluetooth[28907];
  
 void setupBT(){
   SerialBT.begin("LeanTracker");
   delay(100);
 }
 
-void receive_command(){
+void closeBT(){
+  delay(500); //To be sure we finish the current file.
+  SerialBT.disconnect();
+  delay(100);
+  SerialBT.end();
+  delay(100);
+}
+
+void receive_command_CLI(){
 
   String inputCommand = "";
   M5.lcd.setCursor(0,50);
@@ -36,19 +46,47 @@ void receive_command(){
 
 }
 
+void receive_command_GUI(){ 
+
+  while(1){
+    M5.Lcd.drawJpg(bluetooth, 28907, 0,0,320,240);
+    Event& e = M5.Buttons.event;
+
+    if (e & E_TOUCH) {
+      if (e.to.x > 240 && e.to.y > 130){
+        //Click to quit
+        delay(50);
+        return;
+      }
+    }
+
+    String inputCommand = "";  
+    while (SerialBT.available()) {
+      delay(10);  //small delay to allow input buffer to fill
+      char c = SerialBT.read();  //gets one byte from serial buffer
+      if (c == '\n') break; 
+      inputCommand += c;     
+    }  
+    //A bug in the windows soft, easier that way
+    if (inputCommand == "sendfiles") send_list_files();
+    if (inputCommand.substring(0,2) == "rf") {
+      String fn = inputCommand.substring(3);
+      char filename[fn.length()+1];
+      fn.toCharArray(filename, fn.length()+1);    
+      send_requested_file(filename);
+    }
+  }
+}
+
 void send_list_files(){
   
   int nb_files;
-  char** list_files = list_dir_root(SD, list_files, &nb_files);  
-
+  char** list_files = list_dir_root(SD, list_files, &nb_files);
   SerialBT.printf("sending files\n");
   for (int i = 0; i < nb_files; i++){
      SerialBT.printf("%s\n", list_files[i]);
   }
-  SerialBT.printf("EOF\n");
-  //SerialBT.print("Sending file\n");
-  //send_requested_file(list_files[0]);
-  //SerialBT.print("\nFile send\n");
+  SerialBT.printf("EOF\n");  
 }
 
 void send_requested_file(char* name){
@@ -56,8 +94,9 @@ void send_requested_file(char* name){
   File dataFile = SD.open(name, FILE_READ);
   uint8_t* data;
   if (!dataFile) {
-    SerialBT.printf("Cannot open %s\n", name);
-    delay(1000);
+    //SerialBT.printf("Cannot open %s\n", name);
+    SerialBT.printf("ERROR\n");
+    delay(200);
     return;
   }
   else{
@@ -68,8 +107,7 @@ void send_requested_file(char* name){
   int nb_read = dataFile.read((uint8_t *)data, dataFile.size()/sizeof(uint8_t));
   if (nb_read == dataFile.size())
     SerialBT.write((uint8_t *)data, dataFile.size()/sizeof(uint8_t));  
-  else{
-    M5.Lcd.println("Error while reading the file");
+  else{    
     SerialBT.println("Error while reading the file");
   }
   dataFile.close();
