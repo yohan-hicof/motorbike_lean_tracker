@@ -13,12 +13,24 @@ Learn to load/save sprites.
 
 //All the part related to the data points
 //So many points
-typedef struct data_point {
+/*typedef struct data_point {
     float pitch; // The whillie/stoppy of the bike
     float roll; // The lean of the motorbike
     float acceleration; // Y acceleration
     double speed; //
     double direction; // Direction of the bike from the GPS
+    double lat; // Current latitude
+    double lng; // Current longitude
+    uint32_t date; // Current date
+    uint32_t time; // Current time    
+} data_point_t;*/
+
+typedef struct __attribute__ ((packed)) data_point {
+    float pitch; // The whillie/stoppy of the bike
+    float roll; // The lean of the motorbike
+    float acceleration; // Y acceleration
+    float speed; //
+    float direction; // Direction of the bike from the GPS
     double lat; // Current latitude
     double lng; // Current longitude
     uint32_t date; // Current date
@@ -53,7 +65,7 @@ void set_time();
 
 //Function to write the data to SD, and to recreate a chain from a file
 int write_data_to_file(double_chain* tail, int nb_links);
-double_chain* read_data_to_file(char* file_name);
+double_chain* read_data_from_file(char* file_name);
 void check_sd_card();
 void create_save_file_name();
 bool M5Screen2bmp(const char * path);
