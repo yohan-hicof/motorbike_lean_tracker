@@ -24,6 +24,7 @@ https://www.thingiverse.com/thing:5357667
 https://www.thingiverse.com/thing:740221
 
 #TODO
+-----For the M5Stack-----
 
 - Improve the description of the readme and add images. (done, will need to be updated)
 
@@ -46,6 +47,20 @@ https://www.thingiverse.com/thing:740221
 - Modify the bluetooth function to get a nicer view
 
 - Check the performance, the first test shows only 5 points per seconds. I would like to reach 10.
+
+-----For the App-----
+
+- Add an icon.
+
+- Add a background for the main screen, maybe for the replay screen.
+
+- Add some text to display the current point data (angle, speed, acceleration).
+
+- Improve the design of the buttons
+
+- In the replay, top right: Put the proper text, i.e. the date/time of the replay
+
+- Try to replay another file after the first one. It might not work, some stuff might have to be reset (onResume ?)
 
 Known issues
 
