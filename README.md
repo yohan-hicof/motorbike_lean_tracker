@@ -62,5 +62,7 @@ https://www.thingiverse.com/thing:740221
 
 - Try to replay another file after the first one. It might not work, some stuff might have to be reset (onResume ?)
 
+- Implement the lap time detection (use what was done in Python).
+
 Known issues
 

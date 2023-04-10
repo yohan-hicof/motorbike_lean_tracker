@@ -11,21 +11,23 @@
 
     <TextView
         android:id="@+id/textFileName"
-        android:layout_width="147dp"
+        android:layout_width="0dp"
         android:layout_height="20dp"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:text="TextView"
+        app:layout_constraintEnd_toStartOf="@+id/textDate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textDate"
-        android:layout_width="150dp"
+        android:layout_width="0dp"
         android:layout_height="20dp"
-        android:layout_marginStart="19dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="63dp"
+        android:layout_marginEnd="8dp"
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textFileName"
@@ -34,44 +36,52 @@
     <LinearLayout
         android:id="@+id/track_linear"
         android:layout_width="393dp"
-        android:layout_height="530dp"
+        android:layout_height="0dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/buttonShowFull"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textFileName"></LinearLayout>
+
+
+
 
     <ToggleButton
         android:id="@+id/buttonOnOff"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginBottom="8dp"
         android:text="ToggleButton"
         android:textOff="Play"
         android:textOn="Pause"
+        app:layout_constraintBottom_toTopOf="@+id/seekProgress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/seekReplaySpeed" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/buttonShowFull"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginBottom="8dp"
         android:text="Show All"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/track_linear" />
+        app:layout_constraintBottom_toTopOf="@+id/buttonOnOff"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <SeekBar
         android:id="@+id/seekReplaySpeed"
-        android:layout_width="227dp"
+        android:layout_width="0dp"
         android:layout_height="21dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:max="150"
         android:progress="20"
-        app:layout_constraintTop_toBottomOf="@+id/track_linear"
-        tools:layout_editor_absoluteX="10dp" />
+        app:layout_constraintBottom_toTopOf="@+id/buttonOnOff"
+        app:layout_constraintEnd_toStartOf="@+id/buttonShowFull"
+        app:layout_constraintStart_toEndOf="@+id/buttonReplayType" />
 
     <SeekBar
         android:id="@+id/seekProgress"
@@ -88,40 +98,51 @@
         android:id="@+id/buttonBaclLittle"
         android:layout_width="57dp"
         android:layout_height="45dp"
-        android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:text="&lt;"
-        app:layout_constraintEnd_toStartOf="@+id/buttonOnOff"
-        app:layout_constraintTop_toBottomOf="@+id/seekReplaySpeed" />
+        app:layout_constraintBottom_toTopOf="@+id/seekProgress"
+        app:layout_constraintEnd_toStartOf="@+id/buttonOnOff" />
 
     <Button
         android:id="@+id/buttonBackLot"
         android:layout_width="57dp"
         android:layout_height="45dp"
-        android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:text="&lt;&lt;"
-        app:layout_constraintEnd_toStartOf="@+id/buttonBaclLittle"
-        app:layout_constraintTop_toBottomOf="@+id/seekReplaySpeed" />
+        app:layout_constraintBottom_toTopOf="@+id/seekProgress"
+        app:layout_constraintEnd_toStartOf="@+id/buttonBaclLittle" />
 
     <Button
         android:id="@+id/buttonForwardLittle"
         android:layout_width="57dp"
         android:layout_height="45dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginBottom="8dp"
         android:text="&gt;"
-        app:layout_constraintStart_toEndOf="@+id/buttonOnOff"
-        app:layout_constraintTop_toBottomOf="@+id/seekReplaySpeed" />
+        app:layout_constraintBottom_toTopOf="@+id/seekProgress"
+        app:layout_constraintStart_toEndOf="@+id/buttonOnOff" />
 
     <Button
         android:id="@+id/buttonForwardLot"
         android:layout_width="57dp"
         android:layout_height="45dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginBottom="8dp"
         android:text="&gt;&gt;"
-        app:layout_constraintStart_toEndOf="@+id/buttonForwardLittle"
-        app:layout_constraintTop_toBottomOf="@+id/seekReplaySpeed" />
+        app:layout_constraintBottom_toTopOf="@+id/seekProgress"
+        app:layout_constraintStart_toEndOf="@+id/buttonForwardLittle" />
+
+    <Button
+        android:id="@+id/buttonReplayType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="Default"
+        app:layout_constraintBottom_toTopOf="@+id/buttonBaclLittle"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

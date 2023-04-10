@@ -8,10 +8,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -47,6 +49,7 @@ public class DrawTrackActivity extends Activity{
     private ConstraintLayout draw_track_layout;
     //private View track_view;
     String fileName;
+    String[] spinnerChoices = { "Default", "Speed", "Lean"};
     TextView textFileName;
     TextView textDate;
     DataPoint[] list_data_points;
@@ -54,7 +57,28 @@ public class DrawTrackActivity extends Activity{
     int pt_per_second = 20; //How many more points we display every second
     boolean was_running;
 
-    //Timer running_timer;
+    public String intToTime(int input){
+        /*
+        Convert the given int into a string representing the time
+        The int is in the form: HHMMSSCC (Hour, Minute, Second, Centosecond)
+         */
+        int centoSeconds = input%100;
+        int seconds = (input/100)%100;
+        int minutes = (input/10000)%100;
+        int hours = (input/1000000)%100;
+        return hours + ":" + minutes + ":" + seconds + ":" + centoSeconds;
+    }
+
+    public String intToDate(int input){
+        /*
+        Convert the given int into a string representing the time
+        The int is in the form: YYMMDD (Yeah, Month, Day)
+         */
+        int year = input%100;
+        int month = (input/100)%100;
+        int day = (input/10000)%100;
+        return year + ":" + month + ":" + day;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,10 +96,13 @@ public class DrawTrackActivity extends Activity{
         final Button buttonBackLittle = (Button) findViewById(R.id.buttonBaclLittle);
         final Button buttonForwardLittle = (Button) findViewById(R.id.buttonForwardLittle);
         final Button buttonForwardLot = (Button) findViewById(R.id.buttonForwardLot);
+        final Button buttonReplayType = (Button) findViewById(R.id.buttonReplayType);
 
         final SeekBar seekReplaySpeed = (SeekBar) findViewById(R.id.seekReplaySpeed);
         final SeekBar seekProgress = (SeekBar) findViewById(R.id.seekProgress);
         Timer timerMovePosition = new Timer();
+
+
 
         //Set the progression bar limit
         seekProgress.setMax(list_data_points.length+1);
@@ -95,6 +122,16 @@ public class DrawTrackActivity extends Activity{
         track_linear.addView(drawTrack);
         //draw_track_layout.addView(drawTrack);
         textFileName.setText(fileName);
+        if (list_data_points.length > 0) {
+            String d = intToDate(list_data_points[0].date);
+            String t = intToTime(list_data_points[0].time);
+            String display = "The " + d + " at " + t;
+            textDate.setText(display);
+        }
+        else{
+            textDate.setText("Error with the file");
+        }
+
 
         //This is used to set the speed at witch we display the points
         //new Timer().scheduleAtFixedRate(new TimerTask() {
@@ -105,7 +142,6 @@ public class DrawTrackActivity extends Activity{
                     curr_point = min(curr_point+pt_per_second, list_data_points.length-1);
                     drawTrack.set_nb_points(curr_point);
                     drawTrack.invalidate();
-                    textDate.setText(String.valueOf(curr_point));
                     seekProgress.setProgress(curr_point);
                 }
             }
@@ -165,6 +201,27 @@ public class DrawTrackActivity extends Activity{
                 curr_point = min(list_data_points.length-1, curr_point+50);
                 drawTrack.set_nb_points(curr_point);
                 drawTrack.invalidate();
+            }
+        });
+
+        buttonReplayType.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String btnState = buttonReplayType.getText().toString().toLowerCase();
+                switch (btnState){
+                    case "default":
+                        buttonReplayType.setText("Lean");
+                        drawTrack.set_replay_type(1);
+                        break;
+                    case "lean":
+                        buttonReplayType.setText("Speed");
+                        drawTrack.set_replay_type(2);
+                        break;
+                    default:
+                        buttonReplayType.setText("Default");
+                        drawTrack.set_replay_type(0);
+                        break;
+                }
             }
         });
 

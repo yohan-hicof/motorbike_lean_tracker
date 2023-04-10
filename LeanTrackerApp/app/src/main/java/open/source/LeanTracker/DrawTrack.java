@@ -19,6 +19,17 @@ public class DrawTrack extends View {
     // below we are creating variables for our paint
     Paint outerPaint, textPaint;
     Paint bgPaint, trackPaint, positionPaint;
+    Paint greenPaint, yellowPaint, orangePaint, redPaint;
+
+    //Below are the threshold for the coloring of the replay.
+    //We also need to know if we display speed, angle or nothing
+    int speed_slow = 100;
+    int speed_normal = 150;
+    int speed_high = 200;
+    int angle_low = 15;
+    int angle_mid = 30;
+    int angle_high = 45;
+    int replay_type = 0; //0: all white, 1 lean, 2 speed;
 
     DataPoint[] list_data_points;
     int nb_points = 0;
@@ -39,6 +50,11 @@ public class DrawTrack extends View {
         positionPaint.setColor(Color.GREEN);
         positionPaint.setStyle(Paint.Style.FILL);
 
+        greenPaint = new Paint(); greenPaint.setColor(Color.GREEN);
+        yellowPaint = new Paint(); yellowPaint.setColor(Color.YELLOW);
+        orangePaint = new Paint(); orangePaint.setColor(R.color.Orange);
+        redPaint = new Paint(); redPaint.setColor(Color.RED);
+
         // on below line we are initializing our paint variable for our text
         textPaint = new Paint(Paint.LINEAR_TEXT_FLAG | Paint.ANTI_ALIAS_FLAG);
         // on below line we are setting color to it.
@@ -48,15 +64,6 @@ public class DrawTrack extends View {
         // In Paint we have to add text size using px so
         // we have created a method where we are converting dp to pixels.
         textPaint.setTextSize(pxFromDp(context, 24));
-
-        // on below line we are initializing our outer paint
-        outerPaint = new Paint();
-
-        // on below line we are setting style to our paint.
-        outerPaint.setStyle(Paint.Style.FILL);
-
-        // on below line we are setting color to it.
-        outerPaint.setColor(getResources().getColor(R.color.colorOn));
 
         // on below line we are creating a display metrics
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -93,11 +100,18 @@ public class DrawTrack extends View {
         for (int i = 0; i < list_data_points.length; i++){
             list_data_points[i].lat = (list_data_points[i].lat-min_lat)/d_lat;
             list_data_points[i].lng = (list_data_points[i].lng-min_lng)/d_lng;
+            //We just want the positive values.
+            if (list_data_points[i].roll < 0) list_data_points[i].roll *= -1;
         }
     }
 
     public void set_nb_points(int nb){
         nb_points = nb;
+        if (nb_points < -1 || nb_points > list_data_points.length) nb_points = -1;
+    }
+    public void set_replay_type(int rt){
+        replay_type = rt;
+        if(replay_type < 0 || replay_type > 2) replay_type = 0;
     }
 
     @Override
@@ -113,7 +127,27 @@ public class DrawTrack extends View {
             for (int i = 0; i < end_pt; i++) {
                 x = (float) list_data_points[i].lat * getWidth();
                 y = (float) list_data_points[i].lng * getWidth();
-                canvas.drawCircle(x, y, 2, trackPaint);
+                if (replay_type == 1){
+                    if (list_data_points[i].roll < angle_low)
+                        canvas.drawCircle(x, y, 2, greenPaint);
+                    else if (list_data_points[i].roll < angle_mid)
+                        canvas.drawCircle(x, y, 2, yellowPaint);
+                    else if (list_data_points[i].roll < angle_high)
+                        canvas.drawCircle(x, y, 2, orangePaint);
+                    else canvas.drawCircle(x, y, 2, redPaint);
+                }
+                else if (replay_type == 2){
+                    if (list_data_points[i].speed < speed_slow)
+                        canvas.drawCircle(x, y, 2, greenPaint);
+                    else if (list_data_points[i].speed < speed_normal)
+                        canvas.drawCircle(x, y, 2, yellowPaint);
+                    else if (list_data_points[i].speed < speed_high)
+                        canvas.drawCircle(x, y, 2, orangePaint);
+                    else canvas.drawCircle(x, y, 2, redPaint);
+                }
+                else{//Default
+                    canvas.drawCircle(x, y, 2, trackPaint);
+                }
             }
             canvas.drawCircle(x, y, 6, positionPaint);
         }
