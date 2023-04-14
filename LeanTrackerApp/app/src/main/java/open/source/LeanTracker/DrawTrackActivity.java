@@ -6,6 +6,7 @@ import static java.lang.Integer.min;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,6 +24,7 @@ import com.droiduino.bluetoothconn.R;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -31,15 +33,192 @@ import java.util.TimerTask;
 
 class DataPoint implements Serializable {
     float pitch;
+    float pitch_abs;
     float roll;
+    float roll_abs;
     float acceleration;
     float speed;
     float direction;
     double lat;
     double lng;
+    double lat_scaled;
+    double lng_scaled;
     int date;
     int time;
 }
+
+class SingleLap implements Serializable {
+    boolean found_lap = false;
+    float max_speed = 0;
+    float mean_speed = 0;
+    float max_lean = 0;
+    double lap_approximation = 0; //The minimum distance between the two point defining the lap
+    int lap_time = 0;
+    int start_index, end_index;
+    String lap_time_string = "";
+
+
+    public int int2Seconds(int input){
+        int nb_seconds = 0;
+        nb_seconds += (input/100)%100;
+        nb_seconds += 60*((input/10000)%100);
+        nb_seconds += 3600*((input/1000000)%100);
+        return nb_seconds;
+    }
+
+    public String seconds2String(int input){
+        int nb_hours = input/3600;
+        input -= nb_hours*3600;
+        int nb_minutes = input/60;
+        input -= nb_minutes*60;
+        int nb_seconds = input;
+        String retour = "Lap time: " + nb_hours + ":" + nb_minutes + ":" + nb_seconds;
+        return retour;
+    }
+    public double distance_two_pt(DataPoint pt1, DataPoint pt2){
+        // Return the distance in meter between the two coordinates
+
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(pt2.lat - pt1.lat);
+        double lonDistance = Math.toRadians(pt2.lng - pt1.lng);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(pt1.lat)) * Math.cos(Math.toRadians(pt2.lat))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+        //Log.e("Computed distance: ", "Distance: " + distance);
+        return distance;
+    }
+    public boolean compute_lap_time(DataPoint[] list_data_points, int first_index, double max_dist, double min_wait){
+
+        int curr_index = first_index+1;
+        double best_dist = 100*max_dist;
+        int best_index = first_index;
+
+        if (curr_index >= list_data_points.length) return false;
+
+        int start_time = int2Seconds(list_data_points[first_index].time);
+        //Move at least min_wait second from the given point
+        while (curr_index < list_data_points.length){
+            int curr_time = int2Seconds(list_data_points[curr_index].time);
+            if (curr_time-start_time > min_wait) break;
+            curr_index++;
+        }
+        //Check if we found a point at least min_wait second later.
+        if (curr_index >= list_data_points.length) return false;
+        //Now move until we find a point that is close enough to the first_index
+        while (curr_index < list_data_points.length){
+            double curr_dist = distance_two_pt(list_data_points[first_index], list_data_points[curr_index]);
+            if (curr_dist < max_dist) {//We found a potential position
+                if (curr_dist < best_dist){best_dist = curr_dist; best_index = curr_index;}
+            }
+            //We found a close position, but are not close anymore, so we stop here
+            else if (best_index != first_index) break;
+            //Lets test first, improve later
+            //if (curr_dist > 5*max_dist) curr_index++; //Move a bit faster if we are very far
+            curr_index++;
+        }
+        if (best_index == first_index) return false;
+        //We found a lap
+        found_lap = true;
+        lap_approximation = best_dist;
+        //Now fill the values
+        for(int i = first_index; i < best_index; i++){
+            max_speed = Float.max(list_data_points[i].speed, max_speed);
+            mean_speed += list_data_points[i].speed;
+            max_lean = Float.max(list_data_points[i].roll, max_lean);
+        }
+        lap_time = int2Seconds(list_data_points[best_index].time) - int2Seconds(list_data_points[first_index].time);
+        lap_time_string = seconds2String(lap_time);
+        mean_speed /= (best_index-first_index);
+        //Save the start and end position. Use to find other laps
+        start_index = first_index;
+        end_index = best_index;
+
+        return true;
+    }
+}
+
+class DataPointList{
+
+    DataPoint[] list_data_points = new DataPoint[0];
+
+    public static double reverse_double(double x) {
+        return ByteBuffer.allocate(8)
+                .order(ByteOrder.BIG_ENDIAN).putDouble(x)
+                .order(ByteOrder.LITTLE_ENDIAN).getDouble(0);
+    }
+
+    public static float reverse_float(float x) {
+        return ByteBuffer.allocate(4)
+                .order(ByteOrder.BIG_ENDIAN).putFloat(x)
+                .order(ByteOrder.LITTLE_ENDIAN).getFloat(0);
+    }
+
+    public static int reverse_int(int x) {
+        return ByteBuffer.allocate(4)
+                .order(ByteOrder.BIG_ENDIAN).putInt(x)
+                .order(ByteOrder.LITTLE_ENDIAN).getInt(0);
+    }
+
+    public void read_input_file(FileInputStream fileIn){
+
+        try {
+            long fileSize = fileIn.getChannel().size();
+            int nb_data_points = (int)(fileSize/44);
+
+            Log.e("DPL File size: ", String.valueOf(fileSize));
+            Log.e("DPL Number of points: ", String.valueOf(nb_data_points));
+
+            DataInputStream inputReader =new DataInputStream (fileIn);
+            //Init the different array that will get the data
+            list_data_points = new DataPoint[nb_data_points];
+            //We have to reverse what we read because of the different endian between the two systems
+            for (int i = 0; i < nb_data_points; i++){
+                list_data_points[i] = new DataPoint();
+                list_data_points[i].pitch = reverse_float(inputReader.readFloat());
+                list_data_points[i].roll = reverse_float(inputReader.readFloat());
+                list_data_points[i].acceleration = reverse_float(inputReader.readFloat());
+                list_data_points[i].speed = reverse_float(inputReader.readFloat());
+                list_data_points[i].direction = reverse_float(inputReader.readFloat());
+                list_data_points[i].lat = reverse_double(inputReader.readDouble());
+                list_data_points[i].lng = reverse_double(inputReader.readDouble());
+                list_data_points[i].date = reverse_int(inputReader.readInt());
+                list_data_points[i].time = reverse_int(inputReader.readInt());
+            }
+            inputReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //Scale the latitude and longitude between 0-1w
+        if (list_data_points.length == 0)return;
+        double min_lat = list_data_points[0].lat, max_lat = list_data_points[0].lat;
+        double min_lng = list_data_points[0].lng, max_lng = list_data_points[0].lng;
+        double d_lat, d_lng;
+        for (int i = 1; i < list_data_points.length; i++){
+            min_lat = Double.min(min_lat, list_data_points[i].lat);
+            max_lat = Double.max(max_lat, list_data_points[i].lat);
+            min_lng = Double.min(min_lng, list_data_points[i].lng);
+            max_lng = Double.max(max_lng, list_data_points[i].lng);
+        }
+        d_lat = max_lat-min_lat;
+        d_lng = max_lng-min_lng;
+
+        for (int i = 0; i < list_data_points.length; i++){
+            list_data_points[i].lat_scaled = (list_data_points[i].lat-min_lat)/d_lat;
+            list_data_points[i].lng_scaled = (list_data_points[i].lng-min_lng)/d_lng;
+            //We just want the positive values.
+            if (list_data_points[i].roll < 0) list_data_points[i].roll_abs = -list_data_points[i].roll;
+            else list_data_points[i].roll_abs = list_data_points[i].roll;
+            if (list_data_points[i].pitch < 0) list_data_points[i].pitch_abs = -list_data_points[i].pitch;
+            else list_data_points[i].pitch_abs = list_data_points[i].pitch;
+        }
+    }
+
+}
+
 
 public class DrawTrackActivity extends Activity{
 
@@ -49,10 +228,10 @@ public class DrawTrackActivity extends Activity{
     private ConstraintLayout draw_track_layout;
     //private View track_view;
     String fileName;
-    String[] spinnerChoices = { "Default", "Speed", "Lean"};
     TextView textFileName;
     TextView textDate;
-    DataPoint[] list_data_points;
+
+    DataPointList datapointlist;
     int curr_point = 0, resume_point = 0; //The last points of the list of data points we display
     int pt_per_second = 20; //How many more points we display every second
     boolean was_running;
@@ -88,7 +267,22 @@ public class DrawTrackActivity extends Activity{
         //Get the parameters from the calling activity
         Intent intent=getIntent();
         fileName = intent.getStringExtra("file_name");
-        read_input_file();
+        //Open the list of points
+        datapointlist = new DataPointList();
+        try {
+            FileInputStream fileDPL = openFileInput(fileName);
+            datapointlist.read_input_file(fileDPL);
+            //list_data_points = datapointlist.list_data_points;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        //Test
+        //SingleLap SL = new SingleLap();
+        //SL.compute_lap_time(list_data_points, 200, 30, 20);
+        //Log.e("Computed distance: ", "Lap time: " + SL.lap_time_string);
+        //Log.e("Computed distance: ", "Mean speed: " + SL.mean_speed);
+
         // initializing our view.
         final ToggleButton buttonOnOff = (ToggleButton) findViewById(R.id.buttonOnOff);
         final Button buttonShowAll = (Button) findViewById(R.id.buttonShowFull);
@@ -102,11 +296,9 @@ public class DrawTrackActivity extends Activity{
         final SeekBar seekProgress = (SeekBar) findViewById(R.id.seekProgress);
         Timer timerMovePosition = new Timer();
 
-
-
         //Set the progression bar limit
-        seekProgress.setMax(list_data_points.length+1);
-
+        //seekProgress.setMax(list_data_points.length+1);
+        seekProgress.setMax(datapointlist.list_data_points.length+1);
 
         //test_view = findViewById(R.id.test_linear_id);
         track_linear = findViewById(R.id.track_linear);
@@ -117,14 +309,14 @@ public class DrawTrackActivity extends Activity{
         // calling our  paint view class and adding
         // its view to our relative layout.
         DrawTrack drawTrack = new DrawTrack(this);
-        drawTrack.set_data_points(list_data_points);
+        drawTrack.set_data_points(datapointlist.list_data_points);
 
         track_linear.addView(drawTrack);
         //draw_track_layout.addView(drawTrack);
         textFileName.setText(fileName);
-        if (list_data_points.length > 0) {
-            String d = intToDate(list_data_points[0].date);
-            String t = intToTime(list_data_points[0].time);
+        if (datapointlist.list_data_points.length > 0) {
+            String d = intToDate(datapointlist.list_data_points[0].date);
+            String t = intToTime(datapointlist.list_data_points[0].time);
             String display = "The " + d + " at " + t;
             textDate.setText(display);
         }
@@ -139,7 +331,7 @@ public class DrawTrackActivity extends Activity{
             @Override
             public void run() {
                 if (buttonOnOff.isChecked()) {
-                    curr_point = min(curr_point+pt_per_second, list_data_points.length-1);
+                    curr_point = min(curr_point+pt_per_second, datapointlist.list_data_points.length-1);
                     drawTrack.set_nb_points(curr_point);
                     drawTrack.invalidate();
                     seekProgress.setProgress(curr_point);
@@ -156,15 +348,13 @@ public class DrawTrackActivity extends Activity{
                     if (buttonOnOff.isChecked()) was_running = true;
                     else was_running = false;
                     buttonOnOff.setChecked(false);
-                    drawTrack.set_nb_points(curr_point);
-                    drawTrack.invalidate();
                 }
                 else{
                     curr_point = resume_point;
                     if (was_running) buttonOnOff.setChecked(true);
-                    drawTrack.set_nb_points(curr_point);
-                    drawTrack.invalidate();
                 }
+                drawTrack.set_nb_points(curr_point);
+                drawTrack.invalidate();
             }
         });
 
@@ -189,7 +379,7 @@ public class DrawTrackActivity extends Activity{
         buttonForwardLittle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                curr_point = min(list_data_points.length-1, curr_point+5);
+                curr_point = min(datapointlist.list_data_points.length-1, curr_point+5);
                 drawTrack.set_nb_points(curr_point);
                 drawTrack.invalidate();
             }
@@ -198,7 +388,7 @@ public class DrawTrackActivity extends Activity{
         buttonForwardLot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                curr_point = min(list_data_points.length-1, curr_point+50);
+                curr_point = min(datapointlist.list_data_points.length-1, curr_point+50);
                 drawTrack.set_nb_points(curr_point);
                 drawTrack.invalidate();
             }
@@ -256,54 +446,5 @@ public class DrawTrackActivity extends Activity{
 
     }
 
-    public static double reverse_double(double x) {
-        return ByteBuffer.allocate(8)
-                .order(ByteOrder.BIG_ENDIAN).putDouble(x)
-                .order(ByteOrder.LITTLE_ENDIAN).getDouble(0);
-    }
-
-    public static float reverse_float(float x) {
-        return ByteBuffer.allocate(4)
-                .order(ByteOrder.BIG_ENDIAN).putFloat(x)
-                .order(ByteOrder.LITTLE_ENDIAN).getFloat(0);
-    }
-
-    public static int reverse_int(int x) {
-        return ByteBuffer.allocate(4)
-                .order(ByteOrder.BIG_ENDIAN).putInt(x)
-                .order(ByteOrder.LITTLE_ENDIAN).getInt(0);
-    }
-
-    public void read_input_file(){
-
-        try {
-            FileInputStream fileIn = openFileInput(fileName);
-            long fileSize = fileIn.getChannel().size();
-            int nb_data_points = (int)(fileSize/44);
-            Log.e("Read file: ",fileName);
-            Log.e("File size: ", String.valueOf(fileSize));
-            Log.e("Number of points: ", String.valueOf(nb_data_points));
-
-            DataInputStream inputReader =new DataInputStream (fileIn);
-            //Init the different array that will get the data
-            list_data_points = new DataPoint[nb_data_points];
-            //We have to reverse what we read because of the different endian between the two systems
-            for (int i = 0; i < nb_data_points; i++){
-                list_data_points[i] = new DataPoint();
-                list_data_points[i].pitch = reverse_float(inputReader.readFloat());
-                list_data_points[i].roll = reverse_float(inputReader.readFloat());
-                list_data_points[i].acceleration = reverse_float(inputReader.readFloat());
-                list_data_points[i].speed = reverse_float(inputReader.readFloat());
-                list_data_points[i].direction = reverse_float(inputReader.readFloat());
-                list_data_points[i].lat = reverse_double(inputReader.readDouble());
-                list_data_points[i].lng = reverse_double(inputReader.readDouble());
-                list_data_points[i].date = reverse_int(inputReader.readInt());
-                list_data_points[i].time = reverse_int(inputReader.readInt());
-            }
-            inputReader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
 

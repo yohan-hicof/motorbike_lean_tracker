@@ -59,8 +59,9 @@ public class MainActivity extends AppCompatActivity {
         final TextView textFileSelected = findViewById(R.id.selected_file);
         final Button buttonSynchronize = findViewById(R.id.buttonSynchronize);
         final Button buttonListFile = findViewById(R.id.buttonSelectFile);
-        final Button buttonOpenFile = findViewById(R.id.buttonOpenFile);
+        final Button buttonOpenFile = findViewById(R.id.buttonReplayFile);
         final Button buttonDeleteFile = findViewById(R.id.buttonDeleteFile);
+        final Button buttonRecapFile = findViewById(R.id.buttonRecapFile);
 
         buttonSynchronize.setEnabled(false);
 
@@ -154,6 +155,21 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else{
                     Intent intent = new Intent(MainActivity.this, DrawTrackActivity.class);
+                    intent.putExtra("file_name", fileName);
+                    startActivity(intent);
+                }
+            }
+        });
+
+        buttonRecapFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String fileName = textFileSelected.getText().toString();
+                if (fileName.equals("No file selected")){
+                    textLog.setText("You have to select a file");
+                }
+                else{
+                    Intent intent = new Intent(MainActivity.this, RecapFileActivity.class);
                     intent.putExtra("file_name", fileName);
                     startActivity(intent);
                 }

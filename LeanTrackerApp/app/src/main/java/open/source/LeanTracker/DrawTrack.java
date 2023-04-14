@@ -81,28 +81,9 @@ public class DrawTrack extends View {
     }
 
     public void set_data_points(DataPoint list_dp[]){
-        list_data_points = new DataPoint[list_dp.length];
-        System.arraycopy(list_dp, 0, list_data_points, 0, list_dp.length);
-        if (list_data_points.length == 0) return;
-        //Scale all the lat/lng between 0 and 1
-        double min_lat = list_data_points[0].lat, max_lat = list_data_points[0].lat;
-        double min_lng = list_data_points[0].lng, max_lng = list_data_points[0].lng;
-        double d_lat, d_lng;
-        for (int i = 1; i < list_data_points.length; i++){
-            min_lat = min(min_lat, list_data_points[i].lat);
-            max_lat = max(max_lat, list_data_points[i].lat);
-            min_lng = min(min_lng, list_data_points[i].lng);
-            max_lng = max(max_lng, list_data_points[i].lng);
-        }
-        d_lat = max_lat-min_lat;
-        d_lng = max_lng-min_lng;
-
-        for (int i = 0; i < list_data_points.length; i++){
-            list_data_points[i].lat = (list_data_points[i].lat-min_lat)/d_lat;
-            list_data_points[i].lng = (list_data_points[i].lng-min_lng)/d_lng;
-            //We just want the positive values.
-            if (list_data_points[i].roll < 0) list_data_points[i].roll *= -1;
-        }
+        //list_data_points = new DataPoint[list_dp.length];
+        //System.arraycopy(list_dp, 0, list_data_points, 0, list_dp.length);
+        list_data_points = list_dp;
     }
 
     public void set_nb_points(int nb){
@@ -125,8 +106,8 @@ public class DrawTrack extends View {
             int end_pt = nb_points;
             if (end_pt == -1 || end_pt > list_data_points.length) end_pt = list_data_points.length;
             for (int i = 0; i < end_pt; i++) {
-                x = (float) list_data_points[i].lat * getWidth();
-                y = (float) list_data_points[i].lng * getWidth();
+                x = (float) list_data_points[i].lat_scaled * getWidth();
+                y = (float) list_data_points[i].lng_scaled * getWidth();
                 if (replay_type == 1){
                     if (list_data_points[i].roll < angle_low)
                         canvas.drawCircle(x, y, 2, greenPaint);

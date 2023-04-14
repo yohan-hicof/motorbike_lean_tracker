@@ -90,12 +90,12 @@
         app:layout_constraintTop_toBottomOf="@+id/buttonSelectFile" />
 
     <Button
-        android:id="@+id/buttonOpenFile"
+        android:id="@+id/buttonReplayFile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="64dp"
         android:layout_marginTop="32dp"
-        android:text="Open File"
+        android:text="Replay File"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/selected_file" />
 
@@ -108,6 +108,16 @@
         android:text="DeleteFile"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/selected_file" />
+
+    <Button
+        android:id="@+id/buttonRecapFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="72dp"
+        android:layout_marginTop="16dp"
+        android:text="Recap file"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonReplayFile" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

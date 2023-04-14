@@ -27,6 +27,10 @@
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
+        <activity android:name="open.source.LeanTracker.RecapFileActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
+        </activity>
         <activity android:name="open.source.LeanTracker.MainActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
