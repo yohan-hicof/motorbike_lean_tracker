@@ -30,17 +30,11 @@ https://www.thingiverse.com/thing:740221
 
 - Allow the recorded data to be replayed. (in progress): in the track replay, show more info, like current speed, current lean
 
-- Create a python script to allow data visualisation from the saved file.
-
-- Find a way to estimate the laptime based on gps data. (Need data to test that.)
+- Find a way to estimate the laptime based on gps data. (From the python and java app)
 
 - Add simple capture visualization: Just speed and lean. (in progress)
 
 - Add a visualization that create the track in real time (might be to slow, will have to save the last 3 minutes or something)
-
-- Add the support for bluetooth: i.e. send the files to the cellphone to then display the replay there.
-
-- Change the menu to allow the transfer of data to the cellphone.
 
 - Start the bluetooth only when we want to transfer to save energy.
 
@@ -50,19 +44,15 @@ https://www.thingiverse.com/thing:740221
 
 -----For the App-----
 
-- Add an icon.
+- Change the app name
 
 - Add a background for the main screen, maybe for the replay screen.
 
-- Add some text to display the current point data (angle, speed, acceleration).
-
 - Improve the design of the buttons
-
-- In the replay, top right: Put the proper text, i.e. the date/time of the replay
 
 - Try to replay another file after the first one. It might not work, some stuff might have to be reset (onResume ?)
 
-- Implement the lap time detection (use what was done in Python).
+- Improve the lap time computation (speed up the search).
 
 Known issues
 
