@@ -9,12 +9,16 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.droiduino.bluetoothconn.R;
 
@@ -26,15 +30,15 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Timer;
 
-public class RecapFileActivity extends Activity {
+public class RecapFileActivity extends Activity implements LapTimeAdapter.ItemClickListener{
 
     private ConstraintLayout recap_file_layout;
+    LapTimeAdapter laptimeadapter;
 
     String fileName;
     TextView textViewGeneralOverview;
     //DataPoint[] list_data_points;
     DataPointList datapointlist;
-    //SingleLap[] list_laps;
     ArrayList<SingleLap> list_laps = new ArrayList<SingleLap>();
 
     @SuppressLint("MissingInflatedId")
@@ -62,6 +66,17 @@ public class RecapFileActivity extends Activity {
         recap_file();
         extract_lap_time();
 
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewLapTime);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        laptimeadapter = new LapTimeAdapter(this, list_laps);
+        laptimeadapter.setClickListener(this);
+        recyclerView.setAdapter(laptimeadapter);
+
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        Toast.makeText(this, "You clicked " + laptimeadapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
     }
 
     public int intTime2Seconds(int input){
@@ -80,6 +95,17 @@ public class RecapFileActivity extends Activity {
         return t1-t2;
     }
 
+    public String seconds2String(int input){
+        int nb_hours = input/3600;
+        input -= nb_hours*3600;
+        int nb_minutes = input/60;
+        input -= nb_minutes*60;
+        int nb_seconds = input;
+        String retour = nb_hours + ":" + nb_minutes + ":" + nb_seconds;
+        return retour;
+    }
+
+    @SuppressLint("DefaultLocale")
     public void recap_file(){
         /*
         Take all the points in the list of point, and create a string that contains all the
@@ -98,9 +124,10 @@ public class RecapFileActivity extends Activity {
                                   datapointlist.list_data_points[datapointlist.list_data_points.length-1].time);
 
         String summary;
-        summary = "File:" + fileName + "\n" + "Running time: " + running_time + "s\n";
-        summary += "Maximum speed: " + max_speed + "Km/h\n" + "Mean speed: " + mean_speed + "Km/h\n";
-        summary += "Max lean angle: " + max_lean + "\n";
+        summary = "File:" + fileName + "\n\t" + "Running time: " + seconds2String(running_time);
+        summary += "\n\tMaximum speed: " + String.format("%3.1f", max_speed) + "Km/h\n";
+        summary += "\tMean speed: " + String.format("%3.1f", mean_speed) + "Km/h\n";
+        summary += "\tMax lean angle: " + String.format("%2.1f", max_lean) + "\n";
 
         Log.e("To display: ",summary);
         textViewGeneralOverview.setText(summary);

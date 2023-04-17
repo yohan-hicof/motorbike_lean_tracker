@@ -3,6 +3,7 @@ package open.source.LeanTracker;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -231,6 +232,7 @@ public class DrawTrackActivity extends Activity{
     TextView textFileName;
     TextView textDate;
 
+
     DataPointList datapointlist;
     int curr_point = 0, resume_point = 0; //The last points of the list of data points we display
     int pt_per_second = 20; //How many more points we display every second
@@ -272,16 +274,9 @@ public class DrawTrackActivity extends Activity{
         try {
             FileInputStream fileDPL = openFileInput(fileName);
             datapointlist.read_input_file(fileDPL);
-            //list_data_points = datapointlist.list_data_points;
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-
-        //Test
-        //SingleLap SL = new SingleLap();
-        //SL.compute_lap_time(list_data_points, 200, 30, 20);
-        //Log.e("Computed distance: ", "Lap time: " + SL.lap_time_string);
-        //Log.e("Computed distance: ", "Mean speed: " + SL.mean_speed);
 
         // initializing our view.
         final ToggleButton buttonOnOff = (ToggleButton) findViewById(R.id.buttonOnOff);
@@ -294,25 +289,27 @@ public class DrawTrackActivity extends Activity{
 
         final SeekBar seekReplaySpeed = (SeekBar) findViewById(R.id.seekReplaySpeed);
         final SeekBar seekProgress = (SeekBar) findViewById(R.id.seekProgress);
+
+        final TextView textViewLapTime = (TextView) findViewById(R.id.textViewLapTime);
+        final TextView textViewSpeed = (TextView) findViewById(R.id.textViewSpeed);
+        final TextView textViewLean = (TextView) findViewById(R.id.textViewLean);
+
         Timer timerMovePosition = new Timer();
 
         //Set the progression bar limit
-        //seekProgress.setMax(list_data_points.length+1);
         seekProgress.setMax(datapointlist.list_data_points.length+1);
 
-        //test_view = findViewById(R.id.test_linear_id);
         track_linear = findViewById(R.id.track_linear);
         draw_track_layout = findViewById(R.id.draw_track_layout);
-        //track_view = findViewById(R.id.viewTrack);
         textFileName = findViewById(R.id.textFileName);
         textDate = findViewById(R.id.textDate);
+
         // calling our  paint view class and adding
         // its view to our relative layout.
         DrawTrack drawTrack = new DrawTrack(this);
         drawTrack.set_data_points(datapointlist.list_data_points);
 
         track_linear.addView(drawTrack);
-        //draw_track_layout.addView(drawTrack);
         textFileName.setText(fileName);
         if (datapointlist.list_data_points.length > 0) {
             String d = intToDate(datapointlist.list_data_points[0].date);
@@ -324,20 +321,27 @@ public class DrawTrackActivity extends Activity{
             textDate.setText("Error with the file");
         }
 
-
         //This is used to set the speed at witch we display the points
-        //new Timer().scheduleAtFixedRate(new TimerTask() {
         timerMovePosition.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if (buttonOnOff.isChecked()) {
-                    curr_point = min(curr_point+pt_per_second, datapointlist.list_data_points.length-1);
-                    drawTrack.set_nb_points(curr_point);
-                    drawTrack.invalidate();
-                    seekProgress.setProgress(curr_point);
-                }
+            if (buttonOnOff.isChecked()) {
+                curr_point = min(curr_point+pt_per_second, datapointlist.list_data_points.length-1);
+                drawTrack.set_nb_points(curr_point);
+                drawTrack.invalidate();
+                seekProgress.setProgress(curr_point);
+                //Display the lap time, speed and lean in text
+                SingleLap SL = new SingleLap();
+                SL.compute_lap_time(datapointlist.list_data_points, curr_point, 30, 20);
+
+                textViewSpeed.setText(String.format("%3.1f", datapointlist.list_data_points[curr_point].speed) + "Km/h");
+                textViewLean.setText(String.format("%2.1f", datapointlist.list_data_points[curr_point].roll_abs) + "°");
+
+                if (SL.found_lap) textViewLapTime.setText(SL.lap_time_string);
+                else textViewLapTime.setText("No lap time");
             }
-        }, 0, 100);//put here time 1000 milliseconds=1 second
+            }
+        }, 0, 100);//put here time 100 milliseconds = 0.1 second
 
         buttonShowAll.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -412,6 +416,7 @@ public class DrawTrackActivity extends Activity{
                         drawTrack.set_replay_type(0);
                         break;
                 }
+                drawTrack.invalidate();
             }
         });
 

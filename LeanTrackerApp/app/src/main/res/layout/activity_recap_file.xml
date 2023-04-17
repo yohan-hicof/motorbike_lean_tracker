@@ -9,14 +9,15 @@
     <TextView
         android:id="@+id/textViewGeneralOverview"
         android:layout_width="346dp"
-        android:layout_height="91dp"
+        android:layout_height="130dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:text="GeneralOverview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="22sp"/>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -33,6 +34,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:id="@+id/recyclerViewLapTime" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
