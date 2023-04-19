@@ -63,8 +63,8 @@ public class RecapFileActivity extends Activity implements LapTimeAdapter.ItemCl
         // initializing our view.
         textViewGeneralOverview = findViewById(R.id.textViewGeneralOverview);
 
-        recap_file();
         extract_lap_time();
+        recap_file();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerViewLapTime);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -123,12 +123,25 @@ public class RecapFileActivity extends Activity implements LapTimeAdapter.ItemCl
         running_time = diff2Times(datapointlist.list_data_points[0].time,
                                   datapointlist.list_data_points[datapointlist.list_data_points.length-1].time);
 
+        //Find the fastest lap
+        int best_lap = 0, best_lap_time = 100000;
+        for (int i = 0; i < list_laps.size(); i++){
+            if(list_laps.get(i).lap_time < best_lap_time){
+                best_lap_time = list_laps.get(i).lap_time;
+                best_lap = i;
+            }
+        }
+
         String summary;
         summary = "File:" + fileName + "\n\t" + "Running time: " + seconds2String(running_time);
         summary += "\n\tMaximum speed: " + String.format("%3.1f", max_speed) + "Km/h\n";
         summary += "\tMean speed: " + String.format("%3.1f", mean_speed) + "Km/h\n";
         summary += "\tMax lean angle: " + String.format("%2.1f", max_lean) + "\n";
-
+        if (list_laps.size() == 0) summary += "\tNo lap found\n";
+        else{
+            summary += "\tNumber of laps: " + list_laps.size() + "\n";
+            summary += "\tBest lap time: " + list_laps.get(best_lap).lap_time_string + "\n";
+        }
         Log.e("To display: ",summary);
         textViewGeneralOverview.setText(summary);
     }

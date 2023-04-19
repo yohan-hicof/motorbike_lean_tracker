@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Droiduino Bluetooth Connection</string>
+    <string name="app_name">Bike Lean Tracker</string>
     <string name="keep_tapping">Keep tapping.</string>
     <string name="done">Done!</string>
 </resources>

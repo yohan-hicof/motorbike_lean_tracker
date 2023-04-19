@@ -7,15 +7,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -73,7 +69,7 @@ class SingleLap implements Serializable {
         int nb_minutes = input/60;
         input -= nb_minutes*60;
         int nb_seconds = input;
-        String retour = "Lap time: " + nb_hours + ":" + nb_minutes + ":" + nb_seconds;
+        String retour = nb_hours + ":" + nb_minutes + ":" + nb_seconds;
         return retour;
     }
     public double distance_two_pt(DataPoint pt1, DataPoint pt2){
@@ -169,8 +165,8 @@ class DataPointList{
             long fileSize = fileIn.getChannel().size();
             int nb_data_points = (int)(fileSize/44);
 
-            Log.e("DPL File size: ", String.valueOf(fileSize));
-            Log.e("DPL Number of points: ", String.valueOf(nb_data_points));
+            //Log.e("DPL File size: ", String.valueOf(fileSize));
+            //Log.e("DPL Number of points: ", String.valueOf(nb_data_points));
 
             DataInputStream inputReader =new DataInputStream (fileIn);
             //Init the different array that will get the data
@@ -224,9 +220,9 @@ class DataPointList{
 public class DrawTrackActivity extends Activity{
 
     // creating a variable for our relative layout
-    private RelativeLayout relativeLayout;
+    //private RelativeLayout relativeLayout;
     private LinearLayout track_linear;
-    private ConstraintLayout draw_track_layout;
+    //private ConstraintLayout draw_track_layout;
     //private View track_view;
     String fileName;
     TextView textFileName;
@@ -235,7 +231,7 @@ public class DrawTrackActivity extends Activity{
 
     DataPointList datapointlist;
     int curr_point = 0, resume_point = 0; //The last points of the list of data points we display
-    int pt_per_second = 20; //How many more points we display every second
+    int pt_per_update = 5; //How many more points we display every second
     boolean was_running;
 
     public String intToTime(int input){
@@ -300,7 +296,7 @@ public class DrawTrackActivity extends Activity{
         seekProgress.setMax(datapointlist.list_data_points.length+1);
 
         track_linear = findViewById(R.id.track_linear);
-        draw_track_layout = findViewById(R.id.draw_track_layout);
+        //draw_track_layout = findViewById(R.id.draw_track_layout);
         textFileName = findViewById(R.id.textFileName);
         textDate = findViewById(R.id.textDate);
 
@@ -323,10 +319,11 @@ public class DrawTrackActivity extends Activity{
 
         //This is used to set the speed at witch we display the points
         timerMovePosition.scheduleAtFixedRate(new TimerTask() {
+            @SuppressLint("DefaultLocale")
             @Override
             public void run() {
             if (buttonOnOff.isChecked()) {
-                curr_point = min(curr_point+pt_per_second, datapointlist.list_data_points.length-1);
+                curr_point = min(curr_point + pt_per_update, datapointlist.list_data_points.length-1);
                 drawTrack.set_nb_points(curr_point);
                 drawTrack.invalidate();
                 seekProgress.setProgress(curr_point);
@@ -423,7 +420,10 @@ public class DrawTrackActivity extends Activity{
         //Handle the two seek bar
         seekReplaySpeed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                pt_per_second = progress;
+                //pt_per_update = progress;
+                pt_per_update = (int)((progress*progress)/(150.0*150.0)*150);
+
+
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
             }

@@ -1,25 +1,30 @@
 package open.source.LeanTracker;
 
-import static java.lang.Double.max;
-import static java.lang.Double.min;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.DisplayMetrics;
 import android.view.View;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.droiduino.bluetoothconn.R;
 
 public class DrawTrack extends View {
 
     // below we are creating variables for our paint
-    Paint outerPaint, textPaint;
-    Paint bgPaint, trackPaint, positionPaint;
+    Paint bgPaint, trackPaint, positionPaint, textPaint, imageBGPaint;
     Paint greenPaint, yellowPaint, orangePaint, redPaint;
+
+    Bitmap bitmapBG;
+    Rect srcRect;
 
     //Below are the threshold for the coloring of the replay.
     //We also need to know if we display speed, angle or nothing
@@ -38,6 +43,11 @@ public class DrawTrack extends View {
     public DrawTrack(Context context) {
         super(context);
 
+        int [] list_bg_images = {R.drawable.background_bw_01, R.drawable.background_bw_02, R.drawable.background_bw_03,
+                R.drawable.background_bw_04, R.drawable.background_bw_05, R.drawable.background_bw_06,
+                R.drawable.background_bw_07, R.drawable.background_bw_08, R.drawable.background_bw_09,
+                R.drawable.background_bw_10, R.drawable.background_bw_11};
+
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bgPaint.setColor(Color.BLACK);
         bgPaint.setStyle(Paint.Style.FILL);
@@ -49,6 +59,9 @@ public class DrawTrack extends View {
         positionPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         positionPaint.setColor(Color.GREEN);
         positionPaint.setStyle(Paint.Style.FILL);
+
+        imageBGPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        imageBGPaint.setAlpha(80);
 
         greenPaint = new Paint(); greenPaint.setColor(Color.GREEN);
         yellowPaint = new Paint(); yellowPaint.setColor(Color.YELLOW);
@@ -64,6 +77,10 @@ public class DrawTrack extends View {
         // In Paint we have to add text size using px so
         // we have created a method where we are converting dp to pixels.
         textPaint.setTextSize(pxFromDp(context, 24));
+
+        int randomNum = ThreadLocalRandom.current().nextInt(list_bg_images.length);
+        bitmapBG = BitmapFactory.decodeResource(getResources(), list_bg_images[randomNum]);
+        srcRect = new Rect(0, 0, bitmapBG.getWidth(), bitmapBG.getHeight());
 
         // on below line we are creating a display metrics
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -86,6 +103,23 @@ public class DrawTrack extends View {
         list_data_points = list_dp;
     }
 
+    public void set_easy_mode(){
+        speed_slow = 40;
+        speed_normal = 80;
+        speed_high = 120;
+        angle_low = 7;
+        angle_mid = 15;
+        angle_high = 25;
+    }
+    public void set_normal_mode(){
+        speed_slow = 100;
+        speed_normal = 150;
+        speed_high = 200;
+        angle_low = 15;
+        angle_mid = 30;
+        angle_high = 45;
+    }
+
     public void set_nb_points(int nb){
         nb_points = nb;
         if (nb_points < -1 || nb_points > list_data_points.length) nb_points = -1;
@@ -100,6 +134,14 @@ public class DrawTrack extends View {
         super.onDraw(canvas);
 
         canvas.drawPaint(bgPaint);
+
+        //Drawable d = getResources().getDrawable(R.drawable.icon33, null);
+        //d.setBounds(0, 0, right, bottom);
+        //d.draw(canvas);
+        // This code do stuff
+        @SuppressLint("DrawAllocation") RectF dstRect = new RectF(canvas.getClipBounds());
+        canvas.drawBitmap(bitmapBG, srcRect, dstRect, imageBGPaint);
+        //canvas.drawBitmap(bitmapBG, 0, 0, imageBGPaint);
 
         if (list_data_points.length != 0){
             float x = 0, y = 0;
