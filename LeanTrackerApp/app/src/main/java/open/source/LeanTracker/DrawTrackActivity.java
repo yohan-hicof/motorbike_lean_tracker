@@ -193,19 +193,20 @@ class DataPointList{
         if (list_data_points.length == 0)return;
         double min_lat = list_data_points[0].lat, max_lat = list_data_points[0].lat;
         double min_lng = list_data_points[0].lng, max_lng = list_data_points[0].lng;
-        double d_lat, d_lng;
+        double max_delta;
         for (int i = 1; i < list_data_points.length; i++){
             min_lat = Double.min(min_lat, list_data_points[i].lat);
             max_lat = Double.max(max_lat, list_data_points[i].lat);
             min_lng = Double.min(min_lng, list_data_points[i].lng);
             max_lng = Double.max(max_lng, list_data_points[i].lng);
         }
-        d_lat = max_lat-min_lat;
-        d_lng = max_lng-min_lng;
+        //d_lat = max_lat-min_lat;
+        //d_lng = max_lng-min_lng;
+        max_delta = Double.max(max_lat-min_lat, max_lng-min_lng);
 
         for (int i = 0; i < list_data_points.length; i++){
-            list_data_points[i].lat_scaled = (list_data_points[i].lat-min_lat)/d_lat;
-            list_data_points[i].lng_scaled = (list_data_points[i].lng-min_lng)/d_lng;
+            list_data_points[i].lat_scaled = (list_data_points[i].lat-min_lat)/max_delta;
+            list_data_points[i].lng_scaled = (list_data_points[i].lng-min_lng)/max_delta;
             //We just want the positive values.
             if (list_data_points[i].roll < 0) list_data_points[i].roll_abs = -list_data_points[i].roll;
             else list_data_points[i].roll_abs = list_data_points[i].roll;

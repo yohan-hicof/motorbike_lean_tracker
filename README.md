@@ -44,9 +44,10 @@ https://www.thingiverse.com/thing:740221
 
 -----For the App-----
 
-- Change the app name
 
-- Add a background for the main screen, maybe for the replay screen.
+- Make the main screen background rotating.
+
+- Add a background for the recap screen.
 
 - Improve the design of the buttons
 

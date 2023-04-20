@@ -1,5 +1,8 @@
 package open.source.LeanTracker;
 
+import static java.lang.Double.max;
+import static java.lang.Double.min;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -11,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,6 +42,9 @@ public class DrawTrack extends View {
 
     DataPoint[] list_data_points;
     int nb_points = 0;
+    double ratioLatLng = 1.0; //Inverse the representation of latitude and longitude to fit better
+    double ratioWidthHeight = 1.0;
+    boolean invertLatLng = false;
 
     @SuppressLint("ResourceAsColor")
     public DrawTrack(Context context) {
@@ -98,9 +105,17 @@ public class DrawTrack extends View {
     }
 
     public void set_data_points(DataPoint list_dp[]){
-        //list_data_points = new DataPoint[list_dp.length];
-        //System.arraycopy(list_dp, 0, list_data_points, 0, list_dp.length);
         list_data_points = list_dp;
+        //Compute the ratio lat/lng
+        double minLat = 1000, maxLat = -1000, minLng = 1000, maxLng = -1000;
+        for (int i = 0; i < list_data_points.length; i++){
+            minLat = min(minLat, list_data_points[i].lat);
+            maxLat = max(maxLat, list_data_points[i].lat);
+            minLng = min(minLng, list_data_points[i].lng);
+            maxLng = max(maxLng, list_data_points[i].lng);
+        }
+        ratioLatLng = (maxLat-minLat) / (maxLng-minLng);
+        Log.e("Ratio: ", "LatLng: " + ratioLatLng);
     }
 
     public void set_easy_mode(){
@@ -141,15 +156,33 @@ public class DrawTrack extends View {
         // This code do stuff
         @SuppressLint("DrawAllocation") RectF dstRect = new RectF(canvas.getClipBounds());
         canvas.drawBitmap(bitmapBG, srcRect, dstRect, imageBGPaint);
-        //canvas.drawBitmap(bitmapBG, 0, 0, imageBGPaint);
+
+        double W = getWidth(), H = getHeight(), m1, m2;
+        ratioWidthHeight = W/H;
+        if (ratioLatLng < 1.0) {
+            if (ratioLatLng < ratioWidthHeight) m1 = 0.92*H;
+            else m1 = 0.92*W;
+        }
+        else{
+            invertLatLng = true;
+            if (1.0/ratioLatLng < ratioWidthHeight) m1 = 0.92*H;
+            else m1 = 0.92*W;
+        }
+        m2 = 0.04*m1;
 
         if (list_data_points.length != 0){
             float x = 0, y = 0;
             int end_pt = nb_points;
             if (end_pt == -1 || end_pt > list_data_points.length) end_pt = list_data_points.length;
             for (int i = 0; i < end_pt; i++) {
-                x = (float) list_data_points[i].lat_scaled * getWidth();
-                y = (float) list_data_points[i].lng_scaled * getWidth();
+                if (invertLatLng){
+                    y = (float) (list_data_points[i].lat_scaled * m1 + m2);
+                    x = (float) (list_data_points[i].lng_scaled * m1 + m2);
+                }
+                else {
+                    x = (float) (list_data_points[i].lat_scaled * m1 + m2);
+                    y = (float) (list_data_points[i].lng_scaled * m1 + m2);
+                }
                 if (replay_type == 1){
                     if (list_data_points[i].roll < angle_low)
                         canvas.drawCircle(x, y, 2, greenPaint);
