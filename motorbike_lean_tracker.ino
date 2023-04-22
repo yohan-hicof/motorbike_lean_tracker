@@ -27,6 +27,67 @@ void feed_gps_bg(void* pvParameters){
   }
 }
 
+void test_write_speed(){
+  //This is a test function to see how slow it is to write on the file
+  //And try to dev a new, faster function
+  create_save_file_name();
+
+  double_chain* head = NULL; //First data point.
+  double_chain* tail = NULL; //Last data point.
+  int nb_deleted = 0;
+
+  head = create_dummy_data_point(1);
+  head->data.pitch = 0.0;
+  head->data.roll = 0.0;
+  head->data.acceleration = 0.0;
+  head->data.speed = 0.0;
+  head->data.direction = 0.0;
+  head->data.lat = 0.0;
+  head->data.lng = 0.0;
+  head->data.date = 0;
+  head->data.time = 0;
+
+  tail = head;
+  double_chain* temp;
+  for (int i = 2; i < 1000; i++){
+    temp = create_dummy_data_point(i);
+
+    temp->data.pitch = 1.0*i + i/1000.0;
+    temp->data.roll = 1.0*i + i/100.0;
+    temp->data.acceleration = 1.0*i + i/10.0;
+    temp->data.speed = 2.0*i + i/1000.0;
+    temp->data.direction =  2.0*i + i/100.0;
+    temp->data.lat =  2.0*i + i/10.0;
+    temp->data.lng = 3.0*i + i/10.0;
+    temp->data.date = 1000*i;
+    temp->data.time = 100*i;
+
+    tail->next = temp;
+    temp->previous = tail;
+    tail = temp;
+  }
+  head->previous = NULL;
+  
+  M5.Lcd.printf("Writing to file ...\n");
+  uint32_t begin = millis();
+  while (tail != NULL && nb_deleted < 100000){    
+    //write_data_to_file(tail, 50);
+    write_data_to_file_v2(tail, 100);
+    tail = delete_n_links_from_tails(tail, 100);
+    nb_deleted += 100;
+    //Add 100 points back
+    for (int i = 0; i < 100; i++){
+      temp = create_dummy_data_point(i);
+      tail->next = temp;
+      temp->previous = tail;
+      tail = temp;
+    }
+  }
+  uint32_t end = millis();
+  M5.Lcd.printf("Done\n");
+  M5.Lcd.printf("Time: %d ms\n", end-begin);
+}
+
 void setup() {
   
   M5.begin();
@@ -62,7 +123,7 @@ void setup() {
   //Start the background process of getting feed from the gps
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
   
-  //Serial.begin(9600);  
+  //Serial.begin(115200);  
 }
 
 void drawSpot(float ax, float ay, float* old_x, float* old_y){
@@ -331,9 +392,12 @@ void tracker_menu(){
   
 }
 
-void loop() {
+void loop() {  
   
-  //while(1) receive_command_CLI();
+  /*while(1){
+    delay(3000);
+    test_write_speed();
+  }*/
     
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);

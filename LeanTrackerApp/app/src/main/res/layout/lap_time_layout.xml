@@ -3,70 +3,74 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="115dp">
+    android:layout_height="125dp">
     <TextView
         android:id="@+id/lapID"
-        android:layout_width="240dp"
-        android:layout_height="24dp"
+        android:layout_width="185dp"
+        android:layout_height="22dp"
         android:layout_marginEnd="20dp"
         android:maxLines="1"
         android:layout_marginTop="0dp"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:background="@color/White70T"/>
 
     <TextView
         android:id="@+id/lapTime"
-        android:layout_width="240dp"
+        android:layout_width="165dp"
         android:layout_height="24dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:textSize="20sp"/>
+        android:layout_marginTop="22dp"
+        android:textSize="20sp"
+        android:background="@color/White70T"/>
     <TextView
         android:id="@+id/maxSpeed"
-        android:layout_width="240dp"
+        android:layout_width="165dp"
         android:layout_height="24dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="40dp"
-        android:textSize="20sp" />
+        android:layout_marginTop="46dp"
+        android:textSize="20sp"
+        android:background="@color/White70T"/>
 
     <TextView
         android:id="@+id/meanSpeed"
-        android:layout_width="240dp"
+        android:layout_width="165dp"
         android:layout_height="24dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="60dp"
-        android:textSize="20sp"/>
+        android:layout_marginTop="70dp"
+        android:textSize="20sp"
+        android:background="@color/White70T"/>
     <TextView
         android:id="@+id/maxLean"
-        android:layout_width="240dp"
+        android:layout_width="165dp"
         android:layout_height="24dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="80dp"
-        android:textSize="20sp"/>
+        android:layout_marginTop="94dp"
+        android:textSize="20sp"
+        android:background="@color/White70T"/>
 
+    <ImageView
+        android:id="@+id/imageTrack"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="28dp"
+        android:src="@drawable/racetrack" />
     <ImageView
         android:id="@+id/imageSpeed"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_marginTop="42dp"
+        android:layout_marginTop="48dp"
         android:src="@drawable/speedometer" />
     <ImageView
         android:id="@+id/imageSpeed2"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_marginTop="62dp"
+        android:layout_marginTop="72dp"
         android:src="@drawable/speedometer" />
-
     <ImageView
         android:id="@+id/imageLean"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_marginTop="82dp"
+        android:layout_marginTop="96dp"
         android:src="@drawable/lean" />
-    <ImageView
-        android:id="@+id/imageTrack"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="24dp"
-        android:src="@drawable/racetrack" />
 
 </RelativeLayout>

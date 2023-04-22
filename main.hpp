@@ -98,6 +98,7 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels);
 char** list_dir_root(fs::FS &fs, char** list_files, int* nb_files);
 bool select_file(fs::FS &fs, char* selected_path);
 int write_data_to_file(double_chain* tail, int nb_links);
+int write_data_to_file_v2(double_chain* tail, int nb_links);
 double_chain* read_data_from_file(char* file_name);
 void check_sd_card();
 void create_save_file_name();

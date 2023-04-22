@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -62,7 +63,14 @@ class SingleLap implements Serializable {
         nb_seconds += 3600*((input/1000000)%100);
         return nb_seconds;
     }
-
+    public int int2CentiSeconds(int input){
+        int nb_centi_seconds = input%100;
+        int nb_seconds = (input/100)%100;
+        int nb_minutes = (input/10000)%100;
+        int nb_hours = (input/1000000)%100;
+        int retour = 360000*nb_hours + 6000*nb_minutes + 100*nb_seconds + nb_centi_seconds;
+        return retour;
+    }
     public String seconds2String(int input){
         int nb_hours = input/3600;
         input -= nb_hours*3600;
@@ -70,6 +78,16 @@ class SingleLap implements Serializable {
         input -= nb_minutes*60;
         int nb_seconds = input;
         String retour = nb_hours + ":" + nb_minutes + ":" + nb_seconds;
+        return retour;
+    }
+    public String centiSeconds2String(int input){
+        int nb_hours = input/360000;
+        input -= nb_hours*360000;
+        int nb_minutes = input/6000;
+        input -= nb_minutes*6000;
+        int nb_seconds = input/100;
+        int nb_centi_second = input%100;
+        String retour = nb_hours + ":" + nb_minutes + ":" + nb_seconds + ":" + nb_centi_second;
         return retour;
     }
     public double distance_two_pt(DataPoint pt1, DataPoint pt2){
@@ -112,8 +130,8 @@ class SingleLap implements Serializable {
             }
             //We found a close position, but are not close anymore, so we stop here
             else if (best_index != first_index) break;
-            //Lets test first, improve later
-            //if (curr_dist > 5*max_dist) curr_index++; //Move a bit faster if we are very far
+
+            if (curr_dist > 10*max_dist) curr_index+=4; //Move a bit faster if we are very far
             curr_index++;
         }
         if (best_index == first_index) return false;
@@ -126,8 +144,9 @@ class SingleLap implements Serializable {
             mean_speed += list_data_points[i].speed;
             max_lean = Float.max(list_data_points[i].roll, max_lean);
         }
-        lap_time = int2Seconds(list_data_points[best_index].time) - int2Seconds(list_data_points[first_index].time);
-        lap_time_string = seconds2String(lap_time);
+        //lap_time = int2Seconds(list_data_points[best_index].time) - int2Seconds(list_data_points[first_index].time);
+        lap_time = int2CentiSeconds(list_data_points[best_index].time) - int2CentiSeconds(list_data_points[first_index].time);
+        lap_time_string = centiSeconds2String(lap_time);
         mean_speed /= (best_index-first_index);
         //Save the start and end position. Use to find other laps
         start_index = first_index;
@@ -200,8 +219,6 @@ class DataPointList{
             min_lng = Double.min(min_lng, list_data_points[i].lng);
             max_lng = Double.max(max_lng, list_data_points[i].lng);
         }
-        //d_lat = max_lat-min_lat;
-        //d_lng = max_lng-min_lng;
         max_delta = Double.max(max_lat-min_lat, max_lng-min_lng);
 
         for (int i = 0; i < list_data_points.length; i++){
@@ -212,6 +229,24 @@ class DataPointList{
             else list_data_points[i].roll_abs = list_data_points[i].roll;
             if (list_data_points[i].pitch < 0) list_data_points[i].pitch_abs = -list_data_points[i].pitch;
             else list_data_points[i].pitch_abs = list_data_points[i].pitch;
+        }
+        //Try to interpolate the data point time.
+        //The issue is that the GPS always return HH:MM:SS:00, never any tenth of a second.
+        //So if we have 5 points with the same second, the first one is 00, then 20, then 40...
+        for (int i = 0; i < list_data_points.length-1; i++){
+            int end_index = i, nb_same;
+            while (list_data_points[i].time == list_data_points[end_index+1].time && end_index < list_data_points.length-2)
+                end_index++;
+            if (i==end_index) continue;
+            nb_same = end_index-i+1;
+            //Log.e("Nb same ", String.valueOf(nb_same));
+            for (int j = i+1; j <= end_index; j++){
+                double cento = 100.0*(j-i)/nb_same;
+                //Log.e("Old time ", String.valueOf(list_data_points[j].time));
+                list_data_points[j].time += (int)cento;
+                //Log.e("New time ", String.valueOf(list_data_points[j].time));
+            }
+            i = end_index+1;
         }
     }
 
@@ -320,7 +355,7 @@ public class DrawTrackActivity extends Activity{
 
         //This is used to set the speed at witch we display the points
         timerMovePosition.scheduleAtFixedRate(new TimerTask() {
-            @SuppressLint("DefaultLocale")
+            @SuppressLint({"DefaultLocale", "SetTextI18n"})
             @Override
             public void run() {
             if (buttonOnOff.isChecked()) {
@@ -347,8 +382,7 @@ public class DrawTrackActivity extends Activity{
                 if (curr_point >= 0){
                     resume_point = curr_point;
                     curr_point = -1;
-                    if (buttonOnOff.isChecked()) was_running = true;
-                    else was_running = false;
+                    was_running = buttonOnOff.isChecked();
                     buttonOnOff.setChecked(false);
                 }
                 else{
@@ -423,8 +457,6 @@ public class DrawTrackActivity extends Activity{
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 //pt_per_update = progress;
                 pt_per_update = (int)((progress*progress)/(150.0*150.0)*150);
-
-
             }
             public void onStartTrackingTouch(SeekBar seekBar) {
             }

@@ -36,14 +36,11 @@ https://www.thingiverse.com/thing:740221
 
 - Add a visualization that create the track in real time (might be to slow, will have to save the last 3 minutes or something)
 
-- Start the bluetooth only when we want to transfer to save energy.
-
 - Modify the bluetooth function to get a nicer view
 
-- Check the performance, the first test shows only 5 points per seconds. I would like to reach 10.
+- Check the performance, the first test shows only 5 points per seconds. I would like to reach 10. -> Improved to 8pps
 
 -----For the App-----
-
 
 - Make the main screen background rotating.
 
@@ -55,5 +52,8 @@ https://www.thingiverse.com/thing:740221
 
 - Improve the lap time computation (speed up the search).
 
+- Interpolate points for having tens of seconds, since the GPS does not give the centi seconds.
+
 Known issues
 
+On the m5 when running the BT, we have to reboot to leave the BT menu.

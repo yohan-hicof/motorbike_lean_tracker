@@ -103,11 +103,7 @@ int count_nb_links(double_chain* head){
   if (head == NULL) return 0;
   int retour = 1;
   double_chain* current = head;
-  while (current->next != NULL) {
-      /*Serial.print("ID/is saved ?");
-      Serial.print(current->data.date);
-      Serial.print("/");
-      Serial.println(current->saved);*/
+  while (current->next != NULL) {      
       current = current->next;
       retour++;
   }
@@ -133,6 +129,7 @@ double_chain* delete_after_n_links(double_chain* head, int n, bool only_saved){
 
   new_tail = current;
   //If we reached the end before we should delete, just return the current tail.
+  //This also prevent changing the head to null
   if (new_tail->next == NULL) return new_tail;  
   //Check if all were saved (if requested)
   if (only_saved){
@@ -164,12 +161,12 @@ double_chain* delete_n_links_from_tails(double_chain* tail, int n, bool only_sav
   double_chain *current = tail, *to_free = NULL;  
   while (current != NULL && nb_removed < n){
     //If this one is not saved, we do not deleted. No need to check up the chain either    
-    if (!current->saved && only_saved) break;
+    if (!current->saved && only_saved) break;    
     to_free = current;
     current = current->previous;
-    current->next = NULL;
+    if (current != NULL) current->next = NULL;
     free(to_free);
-    nb_removed++;
+    nb_removed++;    
   }  
   //All done, return the new tail
   return current;

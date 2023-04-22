@@ -7,10 +7,12 @@ import static java.lang.Float.sum;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,15 +31,22 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Timer;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class RecapFileActivity extends Activity implements LapTimeAdapter.ItemClickListener{
 
-    private ConstraintLayout recap_file_layout;
+    //private ConstraintLayout recap_file_layout;
+    int [] list_bg_images = {R.drawable.background_color_01, R.drawable.background_color_02, R.drawable.background_color_03,
+            R.drawable.background_color_04, R.drawable.background_color_05, R.drawable.background_color_06,
+            R.drawable.background_color_07, R.drawable.background_color_08, R.drawable.background_color_09,
+            R.drawable.background_color_10, R.drawable.background_color_11, R.drawable.background_color_12,
+            R.drawable.background_color_13, R.drawable.background_color_14, R.drawable.background_color_15,
+            R.drawable.background_color_16};
     LapTimeAdapter laptimeadapter;
-
     String fileName;
     TextView textViewGeneralOverview;
-    //DataPoint[] list_data_points;
+
+    ImageView imageViewbackground;
     DataPointList datapointlist;
     ArrayList<SingleLap> list_laps = new ArrayList<SingleLap>();
 
@@ -62,6 +71,10 @@ public class RecapFileActivity extends Activity implements LapTimeAdapter.ItemCl
 
         // initializing our view.
         textViewGeneralOverview = findViewById(R.id.textViewGeneralOverview);
+        imageViewbackground = findViewById(R.id.recap_background_image);
+
+        int randomNum = ThreadLocalRandom.current().nextInt(list_bg_images.length);
+        imageViewbackground.setBackgroundResource(list_bg_images[randomNum]);
 
         extract_lap_time();
         recap_file();

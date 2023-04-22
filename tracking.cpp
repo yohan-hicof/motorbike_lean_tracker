@@ -43,7 +43,7 @@ void main_tracker_loop(uint8_t display_type){
   //create_tracker_sprite();
   uint32_t last_save; //When was the last time we save on the sd card.
   uint32_t diff_delay;//When we save of delete link, we have to decrease the delay to stay consistent
-  uint32_t wait_time = 100;//the number of ms we wait between two points
+  uint32_t wait_time = 45;//the number of ms we wait between two points
   uint32_t number_of_links = 0;
   uint32_t last_GUI_update = millis();
   uint32_t start_time;
@@ -78,9 +78,9 @@ void main_tracker_loop(uint8_t display_type){
       last_GUI_update = millis();
     }
 
-    if (millis()-last_save > 2000 && sd_card_found){//Save every 2 seconds      
+    if (millis()-last_save > 5000 && sd_card_found){//Save every 5 seconds
       diff_delay = millis();
-      write_data_to_file(tail, 50); //We save up to 50 links
+      write_data_to_file_v2(tail, 100); //We save up to 100 links
       last_save = millis(); //Update the time since last save.      
       diff_delay = last_save-diff_delay;
       if (diff_delay < wait_time)
@@ -88,14 +88,14 @@ void main_tracker_loop(uint8_t display_type){
     }
     else if (number_of_links > 1000){      
       diff_delay = millis();
-      tail = delete_n_links_from_tails(tail, 600, !sd_card_found); //We keep at least 200 data points
+      tail = delete_n_links_from_tails(tail, 600, !sd_card_found); //We keep at least 200 data points      
       number_of_links = count_nb_links(head); //Check how many we really have left (may be not all were saved)      
       diff_delay = millis() - diff_delay;
       if (diff_delay < wait_time)
         delay(wait_time-diff_delay);//Shorter wait to compensate for the time to write
     }
     else{
-      delay(100);
+      delay(wait_time);
       //smartDelay(100);
     }    
   }

@@ -6,6 +6,15 @@
     android:layout_height="match_parent"
     android:id="@+id/recapFileLayout">
 
+    <ImageView
+        android:id="@+id/recap_background_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:background="@android:color/black"
+        android:src="@drawable/background_color_07"
+        android:alpha="0.5" />
+
     <TextView
         android:id="@+id/textViewGeneralOverview"
         android:layout_width="346dp"
@@ -14,6 +23,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:text="GeneralOverview"
+        android:background="@color/White70T"
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

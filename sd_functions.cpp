@@ -8,10 +8,10 @@ extern bool sd_card_found;
 int write_data_to_file(double_chain* tail, int nb_links){
   /*
   Starting from the tail, write n links on the SD card.
-  Return the number of link written
-  TODO find a solution to not write the pointers
+  Return the number of link written  
   */
   if (!sd_card_found) return 0;
+  if (tail == NULL) return 0;
 
   int nb_written = 0;
   double_chain *current = tail;
@@ -21,13 +21,47 @@ int write_data_to_file(double_chain* tail, int nb_links){
   while (current != NULL && nb_written < nb_links){
     if (!current->saved){//Save only if it is not already saved
       dataFile.write((uint8_t *)&(current->data), sizeof(data_point)/sizeof(uint8_t));
-      nb_links++;
+      nb_written++;
       current->saved=true;
     }
     current = current->previous;
   }
   dataFile.close();
-  return nb_links;
+  return nb_written;
+}
+
+int write_data_to_file_v2(double_chain* tail, int nb_links){
+  /*
+  This version should be optimized.
+  1) Allocate memory for all the link to write.
+  2) Iterate over the chain to copy all the links
+  3) Count the number of link found (in case of)
+  4) Write at once all the link on the sd card.
+  Starting from the tail, write n links on the SD card.
+  Return the number of link written
+  
+  */
+  if (!sd_card_found) return 0;
+  if (tail == NULL) return 0;
+
+  int nb_written = 0;
+  data_point* list_data_points = (data_point*) malloc(nb_links*sizeof(data_point));
+  double_chain *current = tail;
+  //Loop over the chain to find up to nb_links
+  while (current != NULL && nb_written < nb_links){
+    if (!current->saved){//Save only if it is not already saved
+      list_data_points[nb_written] = current->data;      
+      nb_written++;
+      current->saved=true;
+    }
+    current = current->previous;
+  }
+  dataFile = SD.open(save_file_name, FILE_APPEND);
+  if (dataFile == NULL) return 0;
+  dataFile.write((uint8_t *)list_data_points, nb_written*sizeof(data_point)/sizeof(uint8_t));  
+  dataFile.close();
+  free(list_data_points);
+  return nb_written;
 }
 
 
