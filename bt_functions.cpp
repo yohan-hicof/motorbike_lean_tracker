@@ -103,13 +103,20 @@ void send_requested_file(char* name){
     //Send the number of bytes to send via BT
     SerialBT.printf("FS %d\n", dataFile.size()); 
   }
-  data = (uint8_t*) malloc(dataFile.size()*sizeof(uint8_t*));
+  data = (uint8_t*) malloc(dataFile.size()*sizeof(uint8_t));
   int nb_read = dataFile.read((uint8_t *)data, dataFile.size()/sizeof(uint8_t));
-  if (nb_read == dataFile.size())
+  Serial.printf("File name: %s\n", name);
+  Serial.printf("File size: %d\n", dataFile.size());
+  Serial.printf("Read size: %d\n", nb_read);
+  if (nb_read == dataFile.size()){
+    Serial.printf("Send file\n");
     SerialBT.write((uint8_t *)data, dataFile.size()/sizeof(uint8_t));  
-  else{    
-    SerialBT.println("Error while reading the file");
   }
+  else{
+    Serial.printf("Send Error message\n");
+    SerialBT.println("Error while reading the file");
+  }    
+  Serial.printf("Done\n");
   dataFile.close();
 
 }

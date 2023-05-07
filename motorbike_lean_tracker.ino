@@ -123,7 +123,7 @@ void setup() {
   //Start the background process of getting feed from the gps
   xTaskCreatePinnedToCore(feed_gps_bg, "feed_gps_bg", 4096, NULL, 2, NULL, 1);
   
-  //Serial.begin(115200);  
+  Serial.begin(115200);  
 }
 
 void drawSpot(float ax, float ay, float* old_x, float* old_y){
@@ -398,6 +398,9 @@ void loop() {
     delay(3000);
     test_write_speed();
   }*/
+  //setupBT();
+  //delay(200);
+  //receive_command_GUI();
     
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);

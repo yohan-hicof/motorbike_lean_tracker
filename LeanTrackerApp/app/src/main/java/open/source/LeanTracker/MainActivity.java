@@ -2,12 +2,16 @@ package open.source.LeanTracker;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -43,6 +47,14 @@ public class MainActivity extends AppCompatActivity {
 
     private final static int CONNECTING_STATUS = 1; // used in bluetooth handler to identify message status
     private final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
+    private final static int UPLOAD = 3; // used in bluetooth handler to know when downloading
+
+    private static String[] PERMISSIONS_LOCATION = {
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT,
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonRecapFile = findViewById(R.id.buttonRecapFile);
 
         buttonSynchronize.setEnabled(false);
+
+        checkPermissions();
 
         // If a bluetooth device has been selected from SelectDeviceActivity
         deviceName = getIntent().getStringExtra("deviceName");
@@ -115,6 +129,19 @@ public class MainActivity extends AppCompatActivity {
                             textLog.setText(arduinoMsg);
                         }
                         break;
+                    case UPLOAD:
+                        Log.e("HANDLER", "Receive the message");
+                        switch(msg.arg1){
+                            case 1:
+                                Log.e("HANDLER", "Set visible");
+                                progressBar.setVisibility(View.VISIBLE);
+                                break;
+                            case 0:
+                                Log.e("HANDLER", "Set invisible");
+                                progressBar.setVisibility(View.GONE);
+                                break;
+                        }
+                        break;
                 }
             }
         };
@@ -135,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String cmdText = "sendfiles";
                 connectedThread.write(cmdText);
+
             }
         });
 
@@ -192,6 +220,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void checkPermissions(){
+        int permission2 = ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN);
+        if (permission2 != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_LOCATION,
+                    1
+            );
+        }
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -371,17 +409,19 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
             }
-
+            Log.e("Received bytes: ", "Going to DL");
             buffer = new byte[file_size];
             for (int i = 0; i < file_size; i++){
                 try {
                     buffer[i] = (byte) mmInStream.read();
+                    //Log.e("Received bytes: ",String.valueOf(i+1));
                     if (i%5000 == 4999) Log.e("Received bytes: ",String.valueOf(i+1));
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
                 }
             }
+
             //Write the result to the file
             try {
                 FileOutputStream fileout = openFileOutput(local_name, MODE_PRIVATE);
@@ -402,18 +442,20 @@ public class MainActivity extends AppCompatActivity {
             Check which files are already here
             Request the files that are not on the local storage yet
              */
-
             //Get the list of local files
+            handler.obtainMessage(UPLOAD,1, 0).sendToTarget();
+
             String[] list_local_files = fileList();
             List<String> list_M5_files = get_list_files();
             //Now compare and download the files we do not have here.
             for (int i = 0; i < list_M5_files.size(); i++){
-                int found = 0;
+                boolean found = false;
                 String curr_name = list_M5_files.get(i).substring(1);
+                if (curr_name.equals("EOF")) continue;
                 for (int j = 0; j < list_local_files.length; j++){
-                    if (curr_name.equals(list_local_files[j])) {found = 1; break;}
+                    if (curr_name.equals(list_local_files[j])) {found = true; break;}
                 }
-                if (found == 0){
+                if (!found ){
                     Log.e("Download : ",list_M5_files.get(i));
                     download_file(list_M5_files.get(i));
                 }
@@ -421,6 +463,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("File was found : ",list_M5_files.get(i));
                 }
             }
+            handler.obtainMessage(UPLOAD,0, 0).sendToTarget();
         }
 
         public void run() {
@@ -439,11 +482,7 @@ public class MainActivity extends AppCompatActivity {
                         readMessage = new String(buffer,0,bytes);
                         if (readMessage.equals("sending files")){
                             Log.e("Arduino Message",readMessage);
-                            //List<String> list_files = get_list_files();
-                            //String result = String.join("\n", list_files);
-                            //Log.e("List of file read:",result);
                             update_files();
-                            //handler.obtainMessage(MESSAGE_READ,result).sendToTarget();
                         }
                         else{
                             Log.e("Arduino Message",readMessage);
