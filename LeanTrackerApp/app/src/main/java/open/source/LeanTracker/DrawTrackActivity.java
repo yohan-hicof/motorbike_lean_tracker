@@ -139,7 +139,7 @@ class SingleLap implements Serializable {
             curr_dist = distance_two_pt_fast(list_data_points[first_index], list_data_points[curr_index]);
 
             if (curr_dist < max_dist) {//We found a potential position
-                fast = false;
+                //fast = false;
                 if (curr_dist < best_dist){best_dist = curr_dist; best_index = curr_index;}
             }
             //We found a close position, but are not close anymore, so we stop here
