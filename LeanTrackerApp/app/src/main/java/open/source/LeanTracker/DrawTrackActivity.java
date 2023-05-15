@@ -11,12 +11,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.droiduino.bluetoothconn.R;
 
@@ -90,7 +87,7 @@ class SingleLap implements Serializable {
         String retour = nb_hours + ":" + nb_minutes + ":" + nb_seconds + ":" + nb_centi_second;
         return retour;
     }
-    public double distance_two_pt(DataPoint pt1, DataPoint pt2){
+    public double distance_two_pt_accurate(DataPoint pt1, DataPoint pt2){
         // Return the distance in meter between the two coordinates
 
         final int R = 6371; // Radius of the earth
@@ -105,27 +102,44 @@ class SingleLap implements Serializable {
         //Log.e("Computed distance: ", "Distance: " + distance);
         return distance;
     }
-    public boolean compute_lap_time(DataPoint[] list_data_points, int first_index, double max_dist, double min_wait){
+
+    public double distance_two_pt_fast(DataPoint pt1, DataPoint pt2){
+        // Return the distance in meter between the two coordinates
+        // This is a faster version for gaining a bit of time.
+        final int R = 6371; // Radius of the earth
+
+        double X = (Math.toRadians(pt2.lng) - Math.toRadians(pt1.lng)) * Math.cos(0.5* (Math.toRadians(pt2.lat) + Math.toRadians(pt1.lat)));
+        double Y = Math.toRadians(pt2.lat) - Math.toRadians(pt1.lat);
+        double d = 1000 * R * Math.sqrt(X*X + Y*Y);
+        //Log.e("Computed distance: ", "Distance: " + d);
+        return d;
+    }
+    public boolean compute_lap_time(DataPoint[] list_data_points, int first_index, double max_dist, double min_dist){
 
         int curr_index = first_index+1;
-        double best_dist = 100*max_dist;
+        double best_dist = 100*max_dist, curr_dist;
         int best_index = first_index;
 
         if (curr_index >= list_data_points.length) return false;
 
-        int start_time = int2Seconds(list_data_points[first_index].time);
-        //Move at least min_wait second from the given point
+        //As long as we are to close from the starting point
         while (curr_index < list_data_points.length){
-            int curr_time = int2Seconds(list_data_points[curr_index].time);
-            if (curr_time-start_time > min_wait) break;
+            curr_dist = distance_two_pt_fast(list_data_points[first_index], list_data_points[curr_index]);
+            if (curr_dist > min_dist) break;
             curr_index++;
         }
         //Check if we found a point at least min_wait second later.
         if (curr_index >= list_data_points.length) return false;
         //Now move until we find a point that is close enough to the first_index
         while (curr_index < list_data_points.length){
-            double curr_dist = distance_two_pt(list_data_points[first_index], list_data_points[curr_index]);
+            //No need to compute accurate at these distances
+            /*if (fast) curr_dist = distance_two_pt_fast(list_data_points[first_index], list_data_points[curr_index]);
+            else curr_dist = distance_two_pt_accurate(list_data_points[first_index], list_data_points[curr_index]);*/
+
+            curr_dist = distance_two_pt_fast(list_data_points[first_index], list_data_points[curr_index]);
+
             if (curr_dist < max_dist) {//We found a potential position
+                fast = false;
                 if (curr_dist < best_dist){best_dist = curr_dist; best_index = curr_index;}
             }
             //We found a close position, but are not close anymore, so we stop here
@@ -365,7 +379,7 @@ public class DrawTrackActivity extends Activity{
                 seekProgress.setProgress(curr_point);
                 //Display the lap time, speed and lean in text
                 SingleLap SL = new SingleLap();
-                SL.compute_lap_time(datapointlist.list_data_points, curr_point, 30, 20);
+                SL.compute_lap_time(datapointlist.list_data_points, curr_point, 30, 100);
 
                 textViewSpeed.setText(String.format("%3.1f", datapointlist.list_data_points[curr_point].speed) + "Km/h");
                 textViewLean.setText(String.format("%2.1f", datapointlist.list_data_points[curr_point].roll_abs) + "°");

@@ -166,7 +166,7 @@ public class RecapFileActivity extends Activity implements LapTimeAdapter.ItemCl
         while(curr_index < datapointlist.list_data_points.length-1){
             SingleLap curr_lap = new SingleLap();
             while (!curr_lap.found_lap && curr_index < datapointlist.list_data_points.length-1) {
-                curr_lap.compute_lap_time(datapointlist.list_data_points, curr_index, 30, 20);
+                curr_lap.compute_lap_time(datapointlist.list_data_points, curr_index, 30, 100);
                 if (!curr_lap.found_lap) curr_index++;
             }
             if (!curr_lap.found_lap) break;
