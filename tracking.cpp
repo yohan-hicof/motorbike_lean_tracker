@@ -60,6 +60,12 @@ void main_tracker_loop(uint8_t display_type){
   delay(100);
   last_save = millis();
   while (true){
+    M5.update();
+    if (M5.BtnA.pressedFor(2500)) {//We end the capture and save the remaining points (-5s)
+      write_data_to_file_v2(tail, number_of_links-50);
+      delay(100);
+      return;
+    }
     current = create_new_data_point();    
     if (current != NULL){      
       head = add_new_head(head, current);

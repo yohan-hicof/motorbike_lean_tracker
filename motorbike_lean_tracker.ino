@@ -23,7 +23,7 @@ void feed_gps_bg(void* pvParameters){
   //This is better than smart delay since it does not require a process to actually need a delay to get new data.
   while(1){//The delay between points is at least 100ms, so refreshing every 25ms is more than enough
     while (ss.available()) gps.encode(ss.read());
-    delay(25);
+    delay(10);
   }
 }
 
@@ -93,6 +93,16 @@ void setup() {
   M5.begin();
   //Connect to the gps
   ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
+  delay(250);
+  //ss.print("$PCAS02,100*1E\r\n");//Set the gps to 10hz -> to be tested
+  //$PCAS02,100*1E  10HZ
+  //$PCAS02,200*1D   5HZ
+  //$PCAS02,250*18   4Hz
+  //$PCAS02,500*1A   2HZ
+  ss.println("$PCAS02,100*1E");
+  ss.println("$PCAS10,0*1C");
+  ss.flush();  
+
   M5.IMU.Init();  
 
   M5.Lcd.fillScreen(BLACK);
@@ -392,15 +402,63 @@ void tracker_menu(){
   
 }
 
+void test_gps(){
+
+  /*
+  Try to find out why the gps is not as fast as it should be.
+  I.e. why it takes only 2 pt per second au lieu de 10
+  */
+  double *lat, *lng;
+  uint32_t *date, *time;
+  int cpt = 0, max_pt = 500;
+
+  lat = (double *) malloc(max_pt*sizeof(double));
+  lng = (double *) malloc(max_pt*sizeof(double));
+  date = (uint32_t *) malloc(max_pt*sizeof(uint32_t));
+  time = (uint32_t *) malloc(max_pt*sizeof(uint32_t));
+
+  while(!gps.location.isValid()){    
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 20); 
+    M5.Lcd.println("Waiting for the GPS\r\nto acquire data.\r\nThe gps can take up\r\nto 30 second to get ready.");
+    delay(50);
+  }
+
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setCursor(0, 20); 
+  M5.Lcd.println("Capturing data");
+  for (int i = 0; i < max_pt; i++){
+    lat[i] = gps.location.lat();
+    lng[i] = gps.location.lng();
+    date[i] = gps.date.value();
+    time[i] = gps.time.value();
+    M5.Lcd.setCursor(0, 40);
+    M5.Lcd.printf("Point %d", i);
+    delay(100);
+  }
+
+  File file = SD.open("/test_gps.txt", FILE_WRITE);
+  for (int i = 0; i < max_pt; i++){
+    file.printf("%f, %f, %d, %d\n", lat[i], lng[i], date[i], time[i]);
+  }
+  file.close();
+
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setCursor(0, 20); 
+  M5.Lcd.println("Done.");
+
+  free(lat);
+  free(lng);
+  free(time);
+  free(date);
+  while(1){}
+ 
+
+}
+
 void loop() {  
-  
-  /*while(1){
-    delay(3000);
-    test_write_speed();
-  }*/
-  //setupBT();
-  //delay(200);
-  //receive_command_GUI();
+
+  test_gps();
     
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);

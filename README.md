@@ -57,3 +57,14 @@ https://www.thingiverse.com/thing:740221
 Known issues
 
 On the m5 when running the BT, we have to reboot to leave the BT menu.
+
+The lap time are only accurate to the second. This is due to the fact that the GPS only gives update every second.
+Even if I interpolate the time, the coordinate is the same, thus it pick the first point that "close" the lap, 
+i.e. the one on the second.
+
+According to this post: 
+https://forum.arduino.cc/t/gps-module-change-update-rate-to-10hz/665212/8
+Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); //GPS baud rate now at original 9600  
+Serial2.print("$PCAS02,100*1E\r\n"); 
+Should allow to set the frequency to 10hz, I will try that.
+This does not work correctly. The GPS only goes up to 2Hz instead of 10. Not sure why.

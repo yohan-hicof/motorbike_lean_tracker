@@ -115,6 +115,7 @@ class SingleLap implements Serializable {
         return d;
     }
     public boolean compute_lap_time(DataPoint[] list_data_points, int first_index, double max_dist, double min_dist){
+               
 
         int curr_index = first_index+1;
         double best_dist = 100*max_dist, curr_dist;
@@ -158,6 +159,7 @@ class SingleLap implements Serializable {
             mean_speed += list_data_points[i].speed;
             max_lean = Float.max(list_data_points[i].roll, max_lean);
         }
+
         //lap_time = int2Seconds(list_data_points[best_index].time) - int2Seconds(list_data_points[first_index].time);
         lap_time = int2CentiSeconds(list_data_points[best_index].time) - int2CentiSeconds(list_data_points[first_index].time);
         lap_time_string = centiSeconds2String(lap_time);
@@ -261,6 +263,11 @@ class DataPointList{
                 //Log.e("New time ", String.valueOf(list_data_points[j].time));
             }
             i = end_index+1;
+        }
+
+        //Log 100 data points to see if interpolation works
+        for (int i = list_data_points.length/3; i < list_data_points.length/3+100; i++){
+            Log.e("Point Time ", String.valueOf(list_data_points[i].time));
         }
     }
 
