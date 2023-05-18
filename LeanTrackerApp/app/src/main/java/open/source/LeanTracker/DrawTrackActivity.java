@@ -246,29 +246,7 @@ class DataPointList{
             if (list_data_points[i].pitch < 0) list_data_points[i].pitch_abs = -list_data_points[i].pitch;
             else list_data_points[i].pitch_abs = list_data_points[i].pitch;
         }
-        //Try to interpolate the data point time.
-        //The issue is that the GPS always return HH:MM:SS:00, never any tenth of a second.
-        //So if we have 5 points with the same second, the first one is 00, then 20, then 40...
-        for (int i = 0; i < list_data_points.length-1; i++){
-            int end_index = i, nb_same;
-            while (list_data_points[i].time == list_data_points[end_index+1].time && end_index < list_data_points.length-2)
-                end_index++;
-            if (i==end_index) continue;
-            nb_same = end_index-i+1;
-            //Log.e("Nb same ", String.valueOf(nb_same));
-            for (int j = i+1; j <= end_index; j++){
-                double cento = 100.0*(j-i)/nb_same;
-                //Log.e("Old time ", String.valueOf(list_data_points[j].time));
-                list_data_points[j].time += (int)cento;
-                //Log.e("New time ", String.valueOf(list_data_points[j].time));
-            }
-            i = end_index+1;
-        }
 
-        //Log 100 data points to see if interpolation works
-        for (int i = list_data_points.length/3; i < list_data_points.length/3+100; i++){
-            Log.e("Point Time ", String.valueOf(list_data_points[i].time));
-        }
     }
 
 }

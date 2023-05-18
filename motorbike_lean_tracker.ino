@@ -4,7 +4,8 @@
 
 TinyGPSPlus gps; //Creat The TinyGPS++ object.
 HardwareSerial ss(2); // The serial connection to the GPS device.
-static const uint32_t GPSBaud = 9600; //For the gps 
+//static const uint32_t GPSBaud = 9600; //For the gps 
+static const uint32_t GPSBaud = 115200; //For the gps 
 
 char save_file_name[64]; //Timestamp name
 File dataFile;
@@ -23,69 +24,20 @@ void feed_gps_bg(void* pvParameters){
   //This is better than smart delay since it does not require a process to actually need a delay to get new data.
   while(1){//The delay between points is at least 100ms, so refreshing every 25ms is more than enough
     while (ss.available()) gps.encode(ss.read());
-    delay(10);
+    delay(25);
   }
 }
 
-void test_write_speed(){
-  //This is a test function to see how slow it is to write on the file
-  //And try to dev a new, faster function
-  create_save_file_name();
-
-  double_chain* head = NULL; //First data point.
-  double_chain* tail = NULL; //Last data point.
-  int nb_deleted = 0;
-
-  head = create_dummy_data_point(1);
-  head->data.pitch = 0.0;
-  head->data.roll = 0.0;
-  head->data.acceleration = 0.0;
-  head->data.speed = 0.0;
-  head->data.direction = 0.0;
-  head->data.lat = 0.0;
-  head->data.lng = 0.0;
-  head->data.date = 0;
-  head->data.time = 0;
-
-  tail = head;
-  double_chain* temp;
-  for (int i = 2; i < 1000; i++){
-    temp = create_dummy_data_point(i);
-
-    temp->data.pitch = 1.0*i + i/1000.0;
-    temp->data.roll = 1.0*i + i/100.0;
-    temp->data.acceleration = 1.0*i + i/10.0;
-    temp->data.speed = 2.0*i + i/1000.0;
-    temp->data.direction =  2.0*i + i/100.0;
-    temp->data.lat =  2.0*i + i/10.0;
-    temp->data.lng = 3.0*i + i/10.0;
-    temp->data.date = 1000*i;
-    temp->data.time = 100*i;
-
-    tail->next = temp;
-    temp->previous = tail;
-    tail = temp;
-  }
-  head->previous = NULL;
-  
-  M5.Lcd.printf("Writing to file ...\n");
-  uint32_t begin = millis();
-  while (tail != NULL && nb_deleted < 100000){    
-    //write_data_to_file(tail, 50);
-    write_data_to_file_v2(tail, 100);
-    tail = delete_n_links_from_tails(tail, 100);
-    nb_deleted += 100;
-    //Add 100 points back
-    for (int i = 0; i < 100; i++){
-      temp = create_dummy_data_point(i);
-      tail->next = temp;
-      temp->previous = tail;
-      tail = temp;
-    }
-  }
-  uint32_t end = millis();
-  M5.Lcd.printf("Done\n");
-  M5.Lcd.printf("Time: %d ms\n", end-begin);
+void setup_gps(){
+  /*
+  This function should be called only once on a new gps unit to set it to 115200 Baud
+  By default the gps unit is set at 9600Baud, but this is to slow to transfer the data @10Hz
+  */
+  ss.begin(9600, SERIAL_8N1, 13, 14);
+  delay(100);    
+  ss.println("$PCAS01,5*19");
+  delay(100);
+  ss.end();
 }
 
 void setup() {
@@ -93,14 +45,12 @@ void setup() {
   M5.begin();
   //Connect to the gps
   ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
-  delay(250);
-  //ss.print("$PCAS02,100*1E\r\n");//Set the gps to 10hz -> to be tested
+  delay(250);  
   //$PCAS02,100*1E  10HZ
   //$PCAS02,200*1D   5HZ
   //$PCAS02,250*18   4Hz
   //$PCAS02,500*1A   2HZ
   ss.println("$PCAS02,100*1E");
-  ss.println("$PCAS10,0*1C");
   ss.flush();  
 
   M5.IMU.Init();  
@@ -402,63 +352,7 @@ void tracker_menu(){
   
 }
 
-void test_gps(){
-
-  /*
-  Try to find out why the gps is not as fast as it should be.
-  I.e. why it takes only 2 pt per second au lieu de 10
-  */
-  double *lat, *lng;
-  uint32_t *date, *time;
-  int cpt = 0, max_pt = 500;
-
-  lat = (double *) malloc(max_pt*sizeof(double));
-  lng = (double *) malloc(max_pt*sizeof(double));
-  date = (uint32_t *) malloc(max_pt*sizeof(uint32_t));
-  time = (uint32_t *) malloc(max_pt*sizeof(uint32_t));
-
-  while(!gps.location.isValid()){    
-    M5.Lcd.fillScreen(BLACK);
-    M5.Lcd.setCursor(0, 20); 
-    M5.Lcd.println("Waiting for the GPS\r\nto acquire data.\r\nThe gps can take up\r\nto 30 second to get ready.");
-    delay(50);
-  }
-
-  M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setCursor(0, 20); 
-  M5.Lcd.println("Capturing data");
-  for (int i = 0; i < max_pt; i++){
-    lat[i] = gps.location.lat();
-    lng[i] = gps.location.lng();
-    date[i] = gps.date.value();
-    time[i] = gps.time.value();
-    M5.Lcd.setCursor(0, 40);
-    M5.Lcd.printf("Point %d", i);
-    delay(100);
-  }
-
-  File file = SD.open("/test_gps.txt", FILE_WRITE);
-  for (int i = 0; i < max_pt; i++){
-    file.printf("%f, %f, %d, %d\n", lat[i], lng[i], date[i], time[i]);
-  }
-  file.close();
-
-  M5.Lcd.fillScreen(BLACK);
-  M5.Lcd.setCursor(0, 20); 
-  M5.Lcd.println("Done.");
-
-  free(lat);
-  free(lng);
-  free(time);
-  free(date);
-  while(1){}
- 
-
-}
-
-void loop() {  
-
-  test_gps();
+void loop() {
     
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);
