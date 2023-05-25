@@ -66,9 +66,11 @@ void receive_command_GUI(){
       char c = SerialBT.read();  //gets one byte from serial buffer
       if (c == '\n') break; 
       inputCommand += c;     
-    }  
+    }
+    //if (inputCommand.length() > 0) Serial.printf("Received command: %s\n", inputCommand);
     //A bug in the windows soft, easier that way
     if (inputCommand == "sendfiles") send_list_files();
+    if (inputCommand == "backupfiles") backup_all_file(SD);
     if (inputCommand.substring(0,2) == "rf") {
       String fn = inputCommand.substring(3);
       char filename[fn.length()+1];

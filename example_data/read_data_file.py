@@ -1,7 +1,7 @@
 import struct
 
 nb_data_point = 0
-with open("2023_05_17_19_56_20.bin",'rb') as f:
+with open("2023_05_21_15_53_25.bin",'rb') as f:
     chunk = f.read(44)
     while chunk != "":
        data_point = struct.unpack("<fffffddII", chunk)

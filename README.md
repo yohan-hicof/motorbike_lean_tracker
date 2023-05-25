@@ -28,8 +28,6 @@ https://www.thingiverse.com/thing:740221
 
 - Improve the description of the readme and add images. (done, will need to be updated)
 
-- Allow the recorded data to be replayed. (in progress): in the track replay, show more info, like current speed, current lean
-
 - Find a way to estimate the laptime based on gps data. (From the python and java app)
 
 - Add simple capture visualization: Just speed and lean. (in progress)
@@ -44,27 +42,10 @@ https://www.thingiverse.com/thing:740221
 
 - Make the main screen background rotating.
 
-- Add a background for the recap screen.
-
 - Improve the design of the buttons
 
-- Try to replay another file after the first one. It might not work, some stuff might have to be reset (onResume ?)
-
 - Improve the lap time computation (speed up the search).
-
-- Interpolate points for having tens of seconds, since the GPS does not give the centi seconds.
 
 Known issues
 
 On the m5 when running the BT, we have to reboot to leave the BT menu.
-
-The lap time are only accurate to the second. This is due to the fact that the GPS only gives update every second.
-Even if I interpolate the time, the coordinate is the same, thus it pick the first point that "close" the lap, 
-i.e. the one on the second.
-
-According to this post: 
-https://forum.arduino.cc/t/gps-module-change-update-rate-to-10hz/665212/8
-Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); //GPS baud rate now at original 9600  
-Serial2.print("$PCAS02,100*1E\r\n"); 
-Should allow to set the frequency to 10hz, I will try that.
-This does not work correctly. The GPS only goes up to 2Hz instead of 10. Not sure why.

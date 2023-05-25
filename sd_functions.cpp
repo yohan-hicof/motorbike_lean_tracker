@@ -64,8 +64,6 @@ int write_data_to_file_v2(double_chain* tail, int nb_links){
   return nb_written;
 }
 
-
-
 double_chain* read_data_from_file(char* file_name){
   /*
   Read the given file data to recreate the linked list containing all the data.
@@ -201,22 +199,22 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
 }
 
 char** list_dir_root(fs::FS &fs, char** list_files, int* nb_files){
-  // Return tre list of files found in the root directory.
+  // Return tre list of files found in the root directory.  
+  *nb_files = 0;
   File root = fs.open("/");
   if(!root) return list_files;    
-  if(!root.isDirectory()) return list_files;    
+  if(!root.isDirectory()) return list_files;      
   //First count the number of files.  
-  *nb_files = 0;
   File file = root.openNextFile();
   while(file){        
     if(!file.isDirectory()) (*nb_files)++;
     file = root.openNextFile();
-  }  
+  }   
   //Now allocate and return the number of files
   root.rewindDirectory();
   list_files = (char**)malloc(*nb_files*sizeof(char*));
   *nb_files = 0;  
-  file = root.openNextFile();
+  file = root.openNextFile();  
   while(file){        
     if(!file.isDirectory()){      
       list_files[*nb_files] = (char*)malloc(64*sizeof(char));      
@@ -296,6 +294,57 @@ bool select_file(fs::FS &fs, char* selected_path){
 
     delay(100);
   }
+  return true;
+}
+
+bool backup_single_file(fs::FS &fs, char* file_path){
+  /*
+  Take a single file at the root of the SD card.
+  Extract the date from the file name, if no date, do nothing.
+  If the folder with the date name exists, move the file to this folder, else create the folder then move.
+  */
+  //Check if the file exists, if its name seems to be what we expect, and if it is large enough
+  if (!fs.exists(file_path)) return false;
+
+  char folder_name[16];
+  char out_name[64];
+  uint8_t buf[64];
+  uint8_t n;
+  strncpy(folder_name, file_path, 11); //The format is /YYYY_MM_DD_HH_MM_SS.bin, we keep /YYYY_MM_DD
+  folder_name[11] = '\0'; //Add the end of string char.  
+
+  strncpy(out_name, folder_name, 11);//First the folder name  
+  strcpy(out_name+11, file_path);//Then the file name with the ending char
+
+  //Create the folder is necessary
+  if (!fs.exists(folder_name)) fs.mkdir(folder_name);
+
+  if (fs.exists(out_name)) return false;
+  
+  File file_in = fs.open(file_path, FILE_READ);
+  if (!file_in) return false;
+  File file_out = fs.open(out_name, FILE_WRITE);
+  if (!file_out) return false;
+
+  while ((n = file_in.read(buf, sizeof(buf))) > 0) {
+    file_out.write(buf, n);
+  }
+  file_in.close();
+  file_out.close();
+
+  fs.remove(file_path);
+  return true;
+}
+
+bool backup_all_file(fs::FS &fs){
+  //Serial.println("Received the command to backup");
+  int nb_files = 0;
+  char** list_files = list_dir_root(fs, list_files, &nb_files);  
+  for (int i = 0; i < nb_files; i++){
+    //Serial.printf("Back up: %s\n", list_files[i]);
+    backup_single_file(fs, list_files[i]);
+  }
+  //Serial.println("Done backing");
   return true;
 }
 

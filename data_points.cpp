@@ -2,7 +2,6 @@
 
 extern TinyGPSPlus gps;
 
-
 double_chain* create_new_data_point(){
   /*
   Create a new data point and return its pointer.

@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -74,8 +73,10 @@ public class MainActivity extends AppCompatActivity {
         final Button buttonOpenFile = findViewById(R.id.buttonReplayFile);
         final Button buttonDeleteFile = findViewById(R.id.buttonDeleteFile);
         final Button buttonRecapFile = findViewById(R.id.buttonRecapFile);
+        final Button buttonM5Backup = findViewById(R.id.buttonM5Backup);
 
         buttonSynchronize.setEnabled(false);
+        buttonM5Backup.setEnabled(false);
 
         checkPermissions();
 
@@ -113,11 +114,13 @@ public class MainActivity extends AppCompatActivity {
                                 progressBar.setVisibility(View.GONE);
                                 buttonConnect.setEnabled(true);
                                 buttonSynchronize.setEnabled(true);
+                                buttonM5Backup.setEnabled(true);
                                 break;
                             case -1:
                                 toolbar.setSubtitle("Device fails to connect");
                                 progressBar.setVisibility(View.GONE);
                                 buttonConnect.setEnabled(true);
+                                buttonM5Backup.setEnabled(true);
                                 break;
                         }
                         break;
@@ -162,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String cmdText = "sendfiles";
                 connectedThread.write(cmdText);
-
             }
         });
 
@@ -216,6 +218,14 @@ public class MainActivity extends AppCompatActivity {
                     deleteFile(fileName);
                     textFileSelected.setText("No file selected");
                 }
+            }
+        });
+
+        buttonM5Backup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String cmdText = "backupfiles";
+                connectedThread.write(cmdText);
             }
         });
     }

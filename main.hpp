@@ -103,6 +103,8 @@ int write_data_to_file_v2(double_chain* tail, int nb_links);
 double_chain* read_data_from_file(char* file_name);
 void check_sd_card();
 void create_save_file_name();
+bool backup_single_file(fs::FS &fs, char* file_path);
+bool backup_all_file(fs::FS &fs);
 bool M5Screen2bmp(const char * path);
 
 //Function linked to the BT functionalities

@@ -33,25 +33,45 @@ void setup_gps(){
   This function should be called only once on a new gps unit to set it to 115200 Baud
   By default the gps unit is set at 9600Baud, but this is to slow to transfer the data @10Hz
   */
+  /*ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
+  delay(100);
+  ss.println("$PCAS10,3*1F");//Reboot in factory setting mode.
+  delay(60000);
+
   ss.begin(9600, SERIAL_8N1, 13, 14);
   delay(100);    
   ss.println("$PCAS01,5*19");
   delay(100);
-  ss.end();
+  ss.end();*/
+
+  //ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
+  //delay(100);    
+  //ss.println("$PCAS04,7*1E");//GPS, BDS, GLONASS
+  //ss.println("$PCAS04,5*1C");//GPS, GLONASS
+  //ss.println("$PCAS04,3*1A");//GPS, BDS
+  //ss.println("$PCAS04,2*1B");//BDS
+  //ss.println("$PCAS04,1*18");//GPS
+
+  //ss.println("$PCAS10,3*1F");//Reboot in factory setting mode.
+
+  delay(100);
 }
 
 void setup() {
   
   M5.begin();
   //Connect to the gps
+  //setup_gps();
+
+
   ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
   delay(250);  
   //$PCAS02,100*1E  10HZ
   //$PCAS02,200*1D   5HZ
   //$PCAS02,250*18   4Hz
   //$PCAS02,500*1A   2HZ
-  ss.println("$PCAS02,100*1E");
-  ss.flush();  
+  //ss.println("$PCAS02,100*1E");
+  //ss.flush();  
 
   M5.IMU.Init();  
 
@@ -353,7 +373,7 @@ void tracker_menu(){
 }
 
 void loop() {
-    
+
   create_battery_sprite(volt_to_percent(M5.Axp.GetBatVoltage()));  
   main_menu_sprite.createSprite(320,240);
   main_menu_sprite.drawJpg(main_menu, 26618, 0,0,320,240);  
