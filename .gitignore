@@ -2,3 +2,4 @@
 *.json
 *.cfg
 example_data/old_format/
+test_data/

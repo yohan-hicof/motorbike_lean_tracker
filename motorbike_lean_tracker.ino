@@ -36,13 +36,16 @@ void setup_gps(){
   /*ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
   delay(100);
   ss.println("$PCAS10,3*1F");//Reboot in factory setting mode.
-  delay(60000);
+  delay(60000);*/
 
   ss.begin(9600, SERIAL_8N1, 13, 14);
-  delay(100);    
+  delay(20);    
   ss.println("$PCAS01,5*19");
-  delay(100);
-  ss.end();*/
+  //delay(20);
+  //ss.println("$PCAS10,0*1C");
+  ss.flush();
+  delay(20);
+  ss.end();
 
   //ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
   //delay(100);    
@@ -54,24 +57,25 @@ void setup_gps(){
 
   //ss.println("$PCAS10,3*1F");//Reboot in factory setting mode.
 
-  delay(100);
+  delay(20);
 }
 
 void setup() {
   
   M5.begin();
   //Connect to the gps
-  //setup_gps();
-
+  setup_gps();
+  delay(100);
 
   ss.begin(GPSBaud, SERIAL_8N1, 13, 14);
-  delay(250);  
+  delay(100);  
   //$PCAS02,100*1E  10HZ
   //$PCAS02,200*1D   5HZ
   //$PCAS02,250*18   4Hz
   //$PCAS02,500*1A   2HZ
-  //ss.println("$PCAS02,100*1E");
-  //ss.flush();  
+  ss.println("$PCAS02,100*1E");
+  ss.println("$PCAS04,7*1E");
+  ss.flush();  
 
   M5.IMU.Init();  
 

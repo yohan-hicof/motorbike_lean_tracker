@@ -111,8 +111,24 @@ void send_requested_file(char* name){
   Serial.printf("File size: %d\n", dataFile.size());
   Serial.printf("Read size: %d\n", nb_read);
   if (nb_read == dataFile.size()){
-    Serial.printf("Send file\n");
-    SerialBT.write((uint8_t *)data, dataFile.size()/sizeof(uint8_t));  
+    M5.Lcd.setCursor(120, 20);
+    M5.Lcd.println(name);
+    Serial.printf("Send file\n");    
+    /*for (int i = 0; i < nb_read; i++){//This work but is slow as hell
+     //SerialBT.printf("%c", data[i]);
+     SerialBT.write((uint8_t *)data + i, sizeof(uint8_t));
+     if (i%5000 == 0){
+      M5.Lcd.setCursor(120, 40);
+      M5.Lcd.printf("[%d/%d]",i, nb_read);
+     }*/
+    for (int i = 0; i < nb_read; i+=44){     
+      SerialBT.write((uint8_t *)&data[i], 44*sizeof(uint8_t));
+      if (i%100*44 == 0){
+        M5.Lcd.setCursor(120, 40);
+        M5.Lcd.printf("[%d/%d]",i, nb_read);
+     }
+    }
+
   }
   else{
     Serial.printf("Send Error message\n");

@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int CONNECTING_STATUS = 1; // used in bluetooth handler to identify message status
     private final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
     private final static int UPLOAD = 3; // used in bluetooth handler to know when downloading
+    private final static int FILE_DL = 4; // used in bluetooth handler to know the DL status
 
     private static String[] PERMISSIONS_LOCATION = {
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -145,6 +146,15 @@ public class MainActivity extends AppCompatActivity {
                                 break;
                         }
                         break;
+                    case FILE_DL:
+                        //Log.d("HANDLER", "Showing the update");
+                        if (msg.arg1 == -1) textLog.setText("Download finished");
+                        else{
+                            int percent = (100* msg.arg1)/ msg.arg2;
+                            String mess = "Downloading file: \n\t[" + msg.arg1 + "/" + msg.arg2 + "] (" + percent + "%)";
+                            textLog.setText(mess);
+                        }
+                        break;
                 }
             }
         };
@@ -214,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                     textLog.setText("You have to select a file");
                 }
                 else{
-                    textLog.setText("File " + fileName + "was deleted");
+                    textLog.setText("File " + fileName + " was deleted");
                     deleteFile(fileName);
                     textFileSelected.setText("No file selected");
                 }
@@ -289,13 +299,13 @@ public class MainActivity extends AppCompatActivity {
                 // Connect to the remote device through the socket. This call blocks
                 // until it succeeds or throws an exception.
                 mmSocket.connect();
-                Log.e("Status", "Device connected");
+                Log.d("Status", "Device connected");
                 handler.obtainMessage(CONNECTING_STATUS, 1, -1).sendToTarget();
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and return.
                 try {
                     mmSocket.close();
-                    Log.e("Status", "Cannot connect to device");
+                    Log.d("Status", "Cannot connect to device");
                     handler.obtainMessage(CONNECTING_STATUS, -1, -1).sendToTarget();
                 } catch (IOException closeException) {
                     Log.e(TAG, "Could not close the client socket", closeException);
@@ -352,9 +362,9 @@ public class MainActivity extends AppCompatActivity {
                     String readMessage;
                     if (buffer[bytes] == '\n'){
                         readMessage = new String(buffer,0,bytes);
-                        Log.e("File name: ",readMessage);
+                        Log.d("File name: ",readMessage);
                         if (readMessage.equals("EOF")) {
-                            Log.e("Good to go: ",readMessage);
+                            Log.d("Good to go: ",readMessage);
                             break; //We received all the files
                         }
                         result.add(readMessage);
@@ -385,14 +395,14 @@ public class MainActivity extends AppCompatActivity {
 
             String out_call = "rf " + fileName;
             String local_name = fileName.substring(1);
-            Log.e("out call: ",out_call);
-            Log.e("local name : ",local_name);
+            Log.d("out call: ",out_call);
+            Log.d("local name : ",local_name);
             //Send the command to the M5
             byte[] b_out_Call = out_call.getBytes(); //converts entered String into bytes
             try {
                 mmOutStream.write(b_out_Call);
             } catch (IOException e) {
-                Log.e("Send Error","Unable to send message",e);
+                Log.d("Send Error","Unable to send message",e);
             }
             //Get the return of the command, Error or the file size
             while (true) {
@@ -401,14 +411,14 @@ public class MainActivity extends AppCompatActivity {
                     String readMessage;
                     if (buffer[bytes] == '\n'){
                         readMessage = new String(buffer,0,bytes);
-                        Log.e("Returned command: ",readMessage);
+                        Log.d("Returned command: ",readMessage);
                         if (readMessage.equals("ERROR")) {
-                            Log.e("No file received: ",readMessage);
+                            Log.d("No file received: ",readMessage);
                             return -1;
                         }
                         //Get the file size
                         file_size = Integer.parseInt(readMessage.substring(3));
-                        Log.e("File size : ", String.valueOf(file_size));
+                        Log.d("File size : ", String.valueOf(file_size));
                         bytes = 0;
                         break;
                     } else {
@@ -419,18 +429,22 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
             }
-            Log.e("Received bytes: ", "Going to DL");
+            Log.d("Received bytes: ", "Going to DL");
             buffer = new byte[file_size];
             for (int i = 0; i < file_size; i++){
                 try {
                     buffer[i] = (byte) mmInStream.read();
                     //Log.e("Received bytes: ",String.valueOf(i+1));
-                    if (i%5000 == 4999) Log.e("Received bytes: ",String.valueOf(i+1));
+                    if (i%5000 == 0) {
+                        Log.d("Received bytes: ",String.valueOf(i+1));
+                        handler.obtainMessage(FILE_DL,i, file_size).sendToTarget();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
                 }
             }
+            handler.obtainMessage(FILE_DL, -1, -1).sendToTarget();
 
             //Write the result to the file
             try {
@@ -438,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
                 DataOutputStream outputWriter=new DataOutputStream (fileout);
                 outputWriter.write(buffer);
                 outputWriter.close();
-                Log.e("Wrote file: ",local_name);
+                Log.d("Wrote file: ",local_name);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -466,11 +480,11 @@ public class MainActivity extends AppCompatActivity {
                     if (curr_name.equals(list_local_files[j])) {found = true; break;}
                 }
                 if (!found ){
-                    Log.e("Download : ",list_M5_files.get(i));
+                    Log.d("Download : ",list_M5_files.get(i));
                     download_file(list_M5_files.get(i));
                 }
                 else{
-                    Log.e("File was found : ",list_M5_files.get(i));
+                    Log.d("File was found : ",list_M5_files.get(i));
                 }
             }
             handler.obtainMessage(UPLOAD,0, 0).sendToTarget();
@@ -491,11 +505,11 @@ public class MainActivity extends AppCompatActivity {
                     if (buffer[bytes] == '\n'){
                         readMessage = new String(buffer,0,bytes);
                         if (readMessage.equals("sending files")){
-                            Log.e("Arduino Message",readMessage);
+                            Log.d("Arduino Message",readMessage);
                             update_files();
                         }
                         else{
-                            Log.e("Arduino Message",readMessage);
+                            Log.d("Arduino Message",readMessage);
                             handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
                         }
                         bytes = 0;

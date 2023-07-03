@@ -49,3 +49,5 @@ https://www.thingiverse.com/thing:740221
 Known issues
 
 On the m5 when running the BT, we have to reboot to leave the BT menu.
+If we connect the M5 and the android app, perform a transfert (sucessful), then ask for another transfert, it does not work, 
+we need to reboot the M5 for a new transfert works. Note that several files tranfert should work.
