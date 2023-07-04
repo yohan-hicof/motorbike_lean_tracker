@@ -99,7 +99,7 @@ class SingleLap implements Serializable {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = R * c * 1000; // convert to meters
-        //Log.e("Computed distance: ", "Distance: " + distance);
+        //Log.d("Computed distance: ", "Distance: " + distance);
         return distance;
     }
 
@@ -118,17 +118,26 @@ class SingleLap implements Serializable {
                
 
         int curr_index = first_index+1;
-        double best_dist = 100*max_dist, curr_dist;
+        double best_dist = 100*max_dist, curr_dist, travel_dist = 0;
+        float max_speed = 0;
         int best_index = first_index;
 
         if (curr_index >= list_data_points.length) return false;
 
-        //As long as we are to close from the starting point
+        //Before we start looking for a lap we want:
+        //  Min traveled distance: 250m.
+        // Min distance from start 100m.
+        //  Min speed reached: 50km/h
         while (curr_index < list_data_points.length){
             curr_dist = distance_two_pt_fast(list_data_points[first_index], list_data_points[curr_index]);
-            if (curr_dist > min_dist) break;
+            travel_dist += distance_two_pt_fast(list_data_points[curr_index-1], list_data_points[curr_index]);
+            max_speed = Float.max(max_speed, list_data_points[curr_index].speed);
+            if (curr_dist > min_dist && travel_dist > 250 && max_speed > 50) break;
             curr_index++;
         }
+        Log.d("LapTime: ", "Indexes: " + first_index + "," + curr_index + "  " + list_data_points.length);
+        Log.d("LapTime: ", "Travel dist: " + travel_dist);
+        Log.d("LapTime: ", "max_speed: " + max_speed);
         //Check if we found a point at least min_wait second later.
         if (curr_index >= list_data_points.length) return false;
         //Now move until we find a point that is close enough to the first_index
@@ -362,16 +371,15 @@ public class DrawTrackActivity extends Activity{
                 drawTrack.set_nb_points(curr_point);
                 drawTrack.invalidate();
                 seekProgress.setProgress(curr_point);
-                //Display the lap time, speed and lean in text
-                SingleLap SL = new SingleLap();
-                SL.compute_lap_time(datapointlist.list_data_points, curr_point, 30, 100);
-
-                textViewSpeed.setText(String.format("%3.1f", datapointlist.list_data_points[curr_point].speed) + "Km/h");
-                textViewLean.setText(String.format("%2.1f", datapointlist.list_data_points[curr_point].roll_abs) + "°");
-
-                if (SL.found_lap) textViewLapTime.setText(SL.lap_time_string);
-                else textViewLapTime.setText("No lap time");
             }
+            //Display the lap time, speed and lean in text
+            SingleLap SL = new SingleLap();
+            SL.compute_lap_time(datapointlist.list_data_points, curr_point, 30, 100);
+            textViewSpeed.setText(String.format("%3.1f", datapointlist.list_data_points[curr_point].speed) + "Km/h");
+            textViewLean.setText(String.format("%2.1f", datapointlist.list_data_points[curr_point].roll_abs) + "°");
+
+            if (SL.found_lap) textViewLapTime.setText(SL.lap_time_string);
+            else textViewLapTime.setText("No lap time");
             }
         }, 0, 100);//put here time 100 milliseconds = 0.1 second
 
